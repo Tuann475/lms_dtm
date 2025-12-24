@@ -1,5 +1,5 @@
 async function login() {
-    var url = 'http://localhost:8080/api/login'
+    var url = apiUrl('/api/login')
     var username = document.getElementById("username").value
     var password = document.getElementById("password").value
     var user = {
@@ -49,7 +49,7 @@ function handleCredentialResponse(response) {
 }
 
 async function sendLoginRequestToBackend(accessToken) {
-    var response = await fetch('http://localhost:8080/api/login/google', {
+    var response = await fetch(apiUrl('/api/login/google'), {
         method: 'POST',
         headers: {
             'Content-Type': 'text/plain'
@@ -179,7 +179,7 @@ async function regis() {
         return;
     }
 
-    const url = 'http://localhost:8080/api/regis';
+    const url = apiUrl('/api/regis');
     const email = document.getElementById("email").value.trim();
     const fullname = document.getElementById("fullname").value.trim();
     const phone = document.getElementById("phone").value.trim();
@@ -226,7 +226,7 @@ async function confirmAccount() {
     var uls = new URL(document.URL)
     var email = uls.searchParams.get("email");
     var key = document.getElementById("maxacthuc").value;
-    var url = 'http://localhost:8080/api/active-account?email=' + email + '&key=' + key
+    var url = apiUrl('/api/active-account') + '?email=' + encodeURIComponent(email) + '&key=' + encodeURIComponent(key)
     const res = await fetch(url, {
         method: 'POST'
     });
@@ -292,7 +292,7 @@ async function changePassword() {
     };
 
     try {
-        const response = await fetch('http://localhost:8080/api/user/change-password', {
+        const response = await fetch(apiUrl('/api/user/change-password'), {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -320,7 +320,7 @@ async function changePassword() {
 
 
 async function loadThongTinTkCheckout() {
-    const response = await fetch('http://localhost:8080/api/user/user-logged', {
+    const response = await fetch(apiUrl('/api/user/user-logged'), {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -385,7 +385,7 @@ async function capNhatThongTin() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/user/update-account', {
+        const response = await fetch(apiUrl('/api/user/update-account'), {
             method: 'POST',
             headers: new Headers({
                 'Authorization': 'Bearer ' + token,
@@ -430,7 +430,7 @@ async function capNhatThongTinteacher() {
         "phone": document.getElementById("phone").value,
         "avatar": avatar,
     }
-    const response = await fetch('http://localhost:8080/api/teacher/update-account', {
+    const response = await fetch(apiUrl('/api/teacher/update-account'), {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token,
@@ -455,7 +455,7 @@ async function capNhatThongTinteacher() {
 }
 
 async function loadThongTinTaiKhoan() {
-    const response = await fetch('http://localhost:8080/api/user/user-logged', {
+    const response = await fetch(apiUrl('/api/user/user-logged'), {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -478,7 +478,7 @@ async function loadThongTinTaiKhoan() {
 }
 
 async function loadThongTinTaiKhoan_teacher() {
-    const response = await fetch('http://localhost:8080/api/teacher/logged', {
+    const response = await fetch(apiUrl('/api/teacher/logged'), {
         method: 'GET',
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -505,7 +505,7 @@ async function changeAvatar() {
     const filePath = document.getElementById('fileanhdaidientl')
     const formData = new FormData()
     formData.append("file", filePath.files[0])
-    var urlUpload = 'http://localhost:8080/api/all/change-avatar';
+    var urlUpload = apiUrl('/api/all/change-avatar');
     const res = await fetch(urlUpload, {
         method: 'POST',
         headers: new Headers({
@@ -536,7 +536,7 @@ async function forgorPassword() {
     }
 
     // Gửi request nếu email hợp lệ
-    var url = 'http://localhost:8080/api/public/quen-mat-khau?email=' + email;
+    var url = apiUrl('/api/public/quen-mat-khau') + '?email=' + encodeURIComponent(email);
     try {
         const res = await fetch(url, {
             method: 'POST'
@@ -573,7 +573,7 @@ async function datLaiMatKhau() {
     var uls = new URL(document.URL)
     var email = uls.searchParams.get("email");
     var key = uls.searchParams.get("key");
-    var url = 'http://localhost:8080/api/public/dat-lai-mat-khau?email=' + email + '&key=' + key + '&password=' + password
+    var url = apiUrl('/api/public/dat-lai-mat-khau') + '?email=' + encodeURIComponent(email) + '&key=' + encodeURIComponent(key) + '&password=' + encodeURIComponent(password)
     const res = await fetch(url, {
         method: 'POST'
     });
@@ -599,7 +599,7 @@ async function loadUserExamStats() {
         if (!token) {
             return;
         }
-        const response = await fetch('http://localhost:8080/api/user/exam-practice-stats', {
+        const response = await fetch(apiUrl('/api/user/exam-practice-stats'), {
             method: 'GET',
             headers: new Headers({
                 'Authorization': 'Bearer ' + token
