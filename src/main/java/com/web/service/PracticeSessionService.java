@@ -146,6 +146,10 @@ public class PracticeSessionService {
                     dto.setSpeakingNote(psq.getQuestion().getSpeakingNote());
                 }
             }
+
+            // NEW: expose lesson content/media for practice UI
+            dto.setLessonContent(psq.getQuestion().getLesson().getContent());
+            dto.setLessonLinkFile(psq.getQuestion().getLesson().getLinkFile());
         }
         if(psq.getSession()!=null && psq.getSession().getUser()!=null){
             dto.setUserId(psq.getSession().getUser().getId());

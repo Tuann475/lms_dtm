@@ -18,21 +18,20 @@
     <script src="js/exam.js"></script>
     <script src="js/onluyen.js"></script>
     <script>
-        window.onload = function () {
+        // Init 1 lần để tránh load lại bị nhân đôi
+        document.addEventListener('DOMContentLoaded', function(){
             loadMenu();
             initOnLuyen();
-        }
+        });
     </script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg headermain" id="menu"></nav>
 <div class="contentmain" style="padding-left:10px;padding-right:10px;background:#f8f9fa;padding-bottom:100px;">
-    <!-- Thanh ôn luyện với tiêu đề ở giữa và nút Thoát -->
-    <!-- Adjusted to truly center both title and button together -->
-    <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
-        <div id="tieudeonluyen_center" class="fw-bold"></div>
-        <button type="button" class="btn btn-outline-danger btn-sm" onclick="exitPractice()">Thoát</button>
-    </div>
+    <!-- Tiêu đề ôn luyện dạng giống làm bài thi: trái là tiêu đề, kèm nút Thoát -->
+    <p class="tenbaithilb"><span id="tieudeonluyen_center" class="fw-bold"></span>
+        <button type="button" class="btnthoat" onclick="exitPractice()">Thoát</button>
+    </p>
     <div class="row" style="margin-top:10px;">
         <div class="col-sm-10">
             <div class="sesctiondethi">
@@ -47,9 +46,10 @@
                     <div class="practice-timer" id="practiceTimer">00:00</div>
                 </div>
                 <div class="mb-2 d-grid gap-2">
-                    <button onclick="submitPractice()" id="btnSubmitPractice" class="btn btn-primary btn-sm" disabled>Trả lời hết để nộp</button>
+                    <button onclick="submitPractice()" id="btnSubmitPractice" class="btn btn-outline-primary btn-sm" disabled>Trả lời hết để nộp</button>
                     <button onclick="viewPracticeResult()" id="btnViewPracticeResult" class="btn btn-success btn-sm" style="display:none;">Xem kết quả</button>
                 </div>
+                <span class="chuuy">Chú ý: bạn có thể click vào số thứ tự câu hỏi trong bài để đánh dấu review</span>
                 <hr>
                 <div class="listlesson" id="listlessonpractice"></div>
             </div>
@@ -57,14 +57,8 @@
     </div>
 </div>
 <div id="footer"></div>
-<script src="js/main.js"></script>
-<script src="js/onluyen.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function(){
-      initOnLuyen();
-  });
   function exitPractice(){
-      // đơn giản quay lại trang luyện đề (hoặc khoá học), tuỳ luồng bạn muốn
       window.location.href = 'luyende';
   }
 </script>

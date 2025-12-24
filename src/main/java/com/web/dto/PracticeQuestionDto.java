@@ -28,6 +28,8 @@ public class PracticeQuestionDto {
     private Boolean practiceGraded;
     private String questionType; // MCQ or FILL for filtering in admin practice grading
     private String userAudio; // user's speaking answer audio
+    private String lessonContent;
+    private String lessonLinkFile; // NEW: expose lesson content/media for practice UI rendering (Reading/Listening)
 
     public Long getId() {
         return id;
@@ -236,6 +238,22 @@ public class PracticeQuestionDto {
 
     public void setUserAudio(String userAudio) {
         this.userAudio = userAudio;
+    }
+
+    public String getLessonContent() {
+        return lessonContent;
+    }
+
+    public void setLessonContent(String lessonContent) {
+        this.lessonContent = lessonContent;
+    }
+
+    public String getLessonLinkFile() {
+        return lessonLinkFile;
+    }
+
+    public void setLessonLinkFile(String lessonLinkFile) {
+        this.lessonLinkFile = lessonLinkFile;
     }
 
     // Backward compatibility alias (old frontend key 'speakingAudio')

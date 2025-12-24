@@ -1,12 +1,53 @@
 var token = localStorage.getItem("token");
 
+// Guard để tránh init bị gọi nhiều lần (do template/script load trùng hoặc browser cache)
+var __practiceInitDone = false;
+
+function getPracticeStateKey(sessionId){
+    return 'practice_state_' + String(sessionId || '');
+}
+
+function loadPracticeLocalState(sessionId){
+    try{
+        var raw = localStorage.getItem(getPracticeStateKey(sessionId));
+        if(!raw) return { fillAnswers:{}, writingDrafts:{} };
+        var obj = JSON.parse(raw);
+        if(!obj || typeof obj !== 'object') return { fillAnswers:{}, writingDrafts:{} };
+        return {
+            fillAnswers: (obj.fillAnswers && typeof obj.fillAnswers==='object') ? obj.fillAnswers : {},
+            writingDrafts: (obj.writingDrafts && typeof obj.writingDrafts==='object') ? obj.writingDrafts : {}
+        };
+    }catch(e){
+        return { fillAnswers:{}, writingDrafts:{} };
+    }
+}
+
+function savePracticeLocalState(){
+    try{
+        if(!window.practice || !practice.sessionId) return;
+        var payload = {
+            fillAnswers: practice.fillAnswers || {},
+            writingDrafts: practice.writingDrafts || {},
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(getPracticeStateKey(practice.sessionId), JSON.stringify(payload));
+    }catch(e){ /* ignore */ }
+}
+
 function initOnLuyen() {
+    if(__practiceInitDone){ return; }
+    __practiceInitDone = true;
+
     var url = new URL(document.URL);
     var sessionId = url.searchParams.get("sessionId");
     if (!sessionId) {
         toastr.error("Không thấy session");
         return;
     }
+
+    // restore local drafts first
+    var localState = loadPracticeLocalState(sessionId);
+
     window.practice = {
         sessionId: sessionId,
         questions: [],
@@ -14,9 +55,16 @@ function initOnLuyen() {
         lessonOrder: [],
         answeredMap: {},
         examId: null,
-        writingDrafts: {}, // thêm lại để lưu nháp viết
-        fillAnswers: {} // Lưu đáp án FILL cho READING/LISTENING
+        writingDrafts: localState.writingDrafts || {},
+        fillAnswers: localState.fillAnswers || {}
     };
+
+    // Auto-save local state while user is typing (also helps reload)
+    try{
+        window.addEventListener('beforeunload', savePracticeLocalState);
+    }catch(e){}
+
+    // Tải câu hỏi + thông tin session
     loadQuestionsAndSession();
 }
 
@@ -73,6 +121,65 @@ function buildLessonGrouping() {
     });
 }
 
+function getLessonFromGroup(lname){
+    try{
+        var list = practice.byLesson[lname] || [];
+        for(var i=0;i<list.length;i++){
+            var q = list[i];
+            if(q && q.lesson){ return q.lesson; }
+        }
+    }catch(e){}
+    return null;
+}
+function renderPracticeLessonContent(lesson){
+    // Try to render from lesson if available; otherwise fallback from questions in current tab context
+    var skill = String(lesson && lesson.skill || '').toUpperCase();
+    var content = lesson && lesson.content || '';
+    var linkFile = lesson && lesson.linkFile || '';
+
+    // Fallback: if lesson missing OR lesson doesn't include content/media,
+    // attempt to infer from the first question that belongs to this group.
+    if((!skill || (skill!=='READING' && skill!=='LISTENING')) || (!content && !linkFile)){
+        try{
+            var qFallback = null;
+            for(var i=0;i<practice.questions.length;i++){
+                var q = practice.questions[i];
+                // Prefer exact lessonId match
+                if(lesson && lesson.id != null && q.lessonId != null && String(q.lessonId) === String(lesson.id)){
+                    qFallback = q; break;
+                }
+                // Prefer same group name
+                if(lesson && (getLessonNameFromQuestion(q) === (lesson.name||lesson.title||''))){ qFallback = q; break; }
+                // Otherwise first Reading/Listening question
+                var s = String(q.skill||'').toUpperCase();
+                if(s==='READING' || s==='LISTENING'){ qFallback = q; break; }
+            }
+            if(qFallback){
+                skill = String(qFallback.skill||skill||'').toUpperCase();
+                // NEW preferred keys from backend
+                content = content || qFallback.lessonContent || qFallback.content || qFallback.lessonBody || '';
+                linkFile = linkFile || qFallback.lessonLinkFile || qFallback.linkFile || qFallback.audio || qFallback.mediaUrl || '';
+            }
+        }catch(e){}
+    }
+
+    if(skill === 'READING'){
+        return content || '';
+    }
+    if(skill === 'LISTENING'){
+        var html = '';
+        if(linkFile){
+            html += '<audio class="post-audio-item" controls style="width:100%">'
+                 + '<source src="'+linkFile+'">Trình duyệt không hỗ trợ audio.</audio>';
+        }
+        if(content && String(content).trim().length>0){
+            html += '<div class="mt-2 listening-extra">'+content+'</div>';
+        }
+        return html;
+    }
+    return content || '';
+}
+
 function renderTabs() {
     var tabsHtml = '';
     practice.lessonOrder.forEach(function (lname, idx) {
@@ -83,12 +190,47 @@ function renderTabs() {
     var contentHtml = '';
     var globalIndex = 1;
     practice.lessonOrder.forEach(function (lname, idx) {
-        var list = practice.byLesson[lname];
+        var list = practice.byLesson[lname] || [];
+        var lesson = getLessonFromGroup(lname);
+        var skill = String((lesson && lesson.skill) || '').toUpperCase();
+        // Prefer real numeric IDs if available to mirror lambaithi naming
+        var lid = null;
+        if(lesson && lesson.id != null) { lid = lesson.id; }
+        if(lid == null){
+            // Try extracting from questions: lessonId, sectionId, partId, etc.
+            for(var i=0;i<list.length;i++){
+                var q = list[i];
+                if(q){
+                    if(q.lessonId != null){ lid = q.lessonId; break; }
+                    if(q.sectionId != null){ lid = q.sectionId; break; }
+                    if(q.partId != null){ lid = q.partId; break; }
+                    if(q.lesson && q.lesson.id != null){ lid = q.lesson.id; break; }
+                }
+            }
+        }
+        // derive a stable group key (prefer numeric id)
+        var groupKey = (lid != null) ? String(lid) : ('idx' + idx);
         contentHtml += '<div class="tab-pane fade show ' + (idx === 0 ? 'active' : '') + '" id="tab-' + idx + '" role="tabpanel">';
-        list.forEach(function (q) {
-            q.globalIndex = globalIndex++;
-            contentHtml += renderQuestionBlock(q);
-        });
+        if(skill === 'SPEAKING'){
+            // speaking: full width questions
+            list.forEach(function (q) {
+                q.globalIndex = globalIndex++;
+                contentHtml += renderQuestionBlock(q);
+            });
+        } else {
+            // reading/listening: left content, right questions
+            contentHtml += '<div class="row">';
+            // lambaithi-like IDs always include the section key
+            var leftId = 'noidungds' + groupKey;
+            contentHtml += '<div class="col-sm-7"><div class="noidungch" id="'+ leftId +'">'+ renderPracticeLessonContent(lesson) +'</div></div>';
+            var rightId = 'dscauhoi' + groupKey;
+            contentHtml += '<div class="col-sm-5"><div class="noidungctl" id="'+ rightId +'">';
+            list.forEach(function (q) {
+                q.globalIndex = globalIndex++;
+                contentHtml += renderQuestionBlock(q);
+            });
+            contentHtml += '</div></div></div>';
+        }
         contentHtml += '</div>';
     });
     $('#practice-content').html(contentHtml);
@@ -293,6 +435,7 @@ function escapeHtml(str){
 function captureWritingDraft(psqId){
     var $ta=$('#writingAns-'+psqId); if(!$ta.length) return;
     var val=$ta.val(); practice.writingDrafts[psqId]=val;
+    savePracticeLocalState();
     var q=practice.questions.find(x=>x.id===psqId); if(q){ q.draftAnswered = (val||'').trim().length>0; markWritingDraft(q); }
 }
 function markWritingDraft(q){ var $btn=$('#btn-q-'+q.id); if(!$btn.length) return; if(!q.answered){ $btn.removeClass('socauhoi-dung socauhoi-sai socauhoi-done'); if(q.draftAnswered){ $btn.addClass('socauhoi-done'); } } }
@@ -303,6 +446,7 @@ function captureFillAnswer(qid) {
     if (!$ta.length) return;
     var val = $ta.val();
     practice.fillAnswers[qid] = val;
+    savePracticeLocalState();
     // Debounce auto-save to server for FILL questions
     if(fillSaveTimers[qid]){ clearTimeout(fillSaveTimers[qid]); }
     fillSaveTimers[qid] = setTimeout(function(){
@@ -767,3 +911,9 @@ function renderGradingHistoryRow(h) {
 }
 
 // In the function that renders the grading history table, replace direct usage of h.score with renderGradingHistoryRow(h)
+
+function loadPracticeSpeakingSubmissions(){
+    // Placeholder: prevent undefined function error blocking rendering
+    // If needed, implement fetching speaking submissions per question and update practice.questions
+    try{ /* no-op */ }catch(e){}
+}
