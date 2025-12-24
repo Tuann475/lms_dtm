@@ -111,7 +111,7 @@
                     var file = this.files[0];
                     var formData = new FormData();
                     formData.append('file', file);
-                    fetch('http://localhost:8080/api/public/upload-file', {
+                    fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', {
                         method: 'POST',
                         body: formData
                     })

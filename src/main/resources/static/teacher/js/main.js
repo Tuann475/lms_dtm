@@ -172,7 +172,7 @@ async function changePassword() {
     var oldpass = document.getElementById("oldpass").value
     var newpass = document.getElementById("newpass").value
     var renewpass = document.getElementById("renewpass").value
-    var url = 'http://localhost:8080/api/all/change-password';
+    var url = 'https://lmsdtm-production.up.railway.app/api/all/change-password';
     if (newpass !== renewpass) {
         alert("mật khẩu mới không trùng khớp");
         return;
@@ -197,7 +197,7 @@ async function checkroleTeacher() {
         window.location.replace('../login')
         return;
     }
-    var url = 'http://localhost:8080/api/teacher/check-role-teacher';
+    var url = 'https://lmsdtm-production.up.railway.app/api/teacher/check-role-teacher';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -222,7 +222,7 @@ function formatmoney(money) {
 async function uploadFile(filePath) {
     const formData = new FormData()
     formData.append("file", filePath.files[0])
-    var urlUpload = 'http://localhost:8080/api/public/upload-file';
+    var urlUpload = 'https://lmsdtm-production.up.railway.app/api/public/upload-file';
     const res = await fetch(urlUpload, {
         method: 'POST',
         body: formData

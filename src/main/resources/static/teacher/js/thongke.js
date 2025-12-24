@@ -1,7 +1,7 @@
 async function thongKe() {
 
     var course = document.getElementById("khoahocselect").value
-    var url = 'http://localhost:8080/api/chapter/all/find-by-course?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/all/find-by-course?course=' + course;
     var response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -32,7 +32,7 @@ async function thongKe() {
     document.getElementById("chuongtk").innerHTML += main
 
 
-    var url = 'http://localhost:8080/api/user-unit/teacher/thong-ke?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/user-unit/teacher/thong-ke?course=' + course;
     var response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -71,7 +71,7 @@ async function xoaKhoaHocUser(idcourse, iduser) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/course-user/teacher/delete?idCourse=' + idcourse + '&iduser=' + iduser;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course-user/teacher/delete?idCourse=' + idcourse + '&iduser=' + iduser;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({

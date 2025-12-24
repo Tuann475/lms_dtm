@@ -3,7 +3,7 @@ var fillAnswers = [];
 
 async function getAllLesson() {
     var lessons = getparamNameMultiValues("lesson");
-    var url = 'http://localhost:8080/api/lesson/public/find-by-list-id';
+    var url = 'https://lmsdtm-production.up.railway.app/api/lesson/public/find-by-list-id';
     const response = await fetch(url, {
         method: 'POST',
         headers: new Headers({
@@ -285,7 +285,7 @@ async function loadSpeakingSubmissionForAudio(audioEl) {
             return;
         }
 
-        const url = `http://localhost:8080/api/speaking/my/exam/${examId}`;
+        const url = `https://lmsdtm-production.up.railway.app/api/speaking/my/exam/${examId}`;
         const response = await fetch(url, {
             method: 'GET',
             headers: new Headers({
@@ -310,7 +310,7 @@ async function loadSpeakingSubmissionForAudio(audioEl) {
             return;
         }
 
-        var src = `http://localhost:8080/api/speaking/audio/${sub.id}`;
+        var src = `https://lmsdtm-production.up.railway.app/api/speaking/audio/${sub.id}`;
         var source = audioEl.querySelector('source');
         source.src = src;
         audioEl.load();
@@ -431,7 +431,7 @@ async function uploadSpeakingRecording(questionId) {
         formData.append('questionId', questionId);
         formData.append('audio', blob, 'speaking_' + questionId + '.webm');
         setSpeakingStatus(questionId, 'Đang tải lên...');
-        const response = await fetch('http://localhost:8080/api/speaking/upload-cloud', {
+        const response = await fetch('https://lmsdtm-production.up.railway.app/api/speaking/upload-cloud', {
             method: 'POST',
             headers: new Headers({ 'Authorization': 'Bearer ' + token }),
             body: formData
@@ -454,7 +454,7 @@ async function uploadSpeakingRecording(questionId) {
         var audioEl = document.getElementById('speakingSubmissionAudio_' + questionId);
         if (audioEl) {
             if (result && result.id) {
-                var src = 'http://localhost:8080/api/speaking/audio/' + result.id;
+                var src = 'https://lmsdtm-production.up.railway.app/api/speaking/audio/' + result.id;
                 var source = audioEl.querySelector('source');
                 if (source) { source.src = src; audioEl.load(); }
             } else if (result && result.audioPath) {
@@ -569,7 +569,7 @@ async function nopBaiThi() {
 
     var payload = { examId: exam, time: sophutlam, answerIds: listcauTl, writings: writings, fills: fills };
     var useComplex = (writings.length > 0) || (fills.length > 0);
-    var urlSubmit = useComplex ? 'http://localhost:8080/api/result/user/create-with-fills' : ('http://localhost:8080/api/result/user/create?examId=' + encodeURIComponent(exam) + '&time=' + encodeURIComponent(sophutlam));
+    var urlSubmit = useComplex ? 'https://lmsdtm-production.up.railway.app/api/result/user/create-with-fills' : ('https://lmsdtm-production.up.railway.app/api/result/user/create?examId=' + encodeURIComponent(exam) + '&time=' + encodeURIComponent(sophutlam));
 
     let response, result;
     try {
@@ -697,7 +697,7 @@ function loadKetQua() {
 async function loadKetQuaByExam() {
     var uls = new URL(document.URL)
     var exam = uls.searchParams.get("exam");
-    const response = await fetch('http://localhost:8080/api/result/user/find-by-user-exam?examId=' + exam, {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/result/user/find-by-user-exam?examId=' + exam, {
         method: 'GET',
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -754,7 +754,7 @@ async function loadKetQuaByExam() {
 }
 
 function renderWritingDetails(resultId){
-    fetch('http://localhost:8080/api/result/user/writing/by-result?resultId='+resultId,{
+    fetch('https://lmsdtm-production.up.railway.app/api/result/user/writing/by-result?resultId='+resultId,{
         headers:new Headers({'Authorization':'Bearer '+token})
     }).then(r=>r.json()).then(list=>{
         if(!Array.isArray(list) || list.length===0){
@@ -863,7 +863,7 @@ function getQuestionById(id) {
 
 function renderFillDetails(resultId){
     // Thử lấy danh sách câu trả lời FILL gắn với result này
-    fetch('http://localhost:8080/api/result/user/fill/by-result?resultId='+resultId,{
+    fetch('https://lmsdtm-production.up.railway.app/api/result/user/fill/by-result?resultId='+resultId,{
         headers:new Headers({'Authorization':'Bearer '+token})
     }).then(r=>{
         if(!r.ok){ throw new Error('HTTP '+r.status); }

@@ -5,7 +5,7 @@ async function loadBaiViet(page, type) {
     if (searchblog == null) {
         searchblog = "";
     }
-    var url = 'http://localhost:8080/api/blog/public/findAll?page=' + page + '&size=' + sizeblog + '&sort=id,desc' + '&search=' + searchblog;
+    var url = 'https://lmsdtm-production.up.railway.app/api/blog/public/findAll?page=' + page + '&size=' + sizeblog + '&sort=id,desc' + '&search=' + searchblog;
     const response = await fetch(url, {});
     var result = await response.json();
     console.log(result);
@@ -43,7 +43,7 @@ async function loadBaiViet(page, type) {
 async function loadCtBlog() {
     var id = window.location.search.split('=')[1];
     if (id != null) {
-        var url = 'http://localhost:8080/api/blog/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/blog/public/findById?id=' + id;
         const response = await fetch(url, {
             method: 'GET'
         });
@@ -58,7 +58,7 @@ async function loadCtBlog() {
 
 async function baiVietLienQuan() {
     var id = window.location.search.split('=')[1];
-    var url = 'http://localhost:8080/api/blog/public/findAll?page=0&size=3&sort=id,desc';
+    var url = 'https://lmsdtm-production.up.railway.app/api/blog/public/findAll?page=0&size=3&sort=id,desc';
     const response = await fetch(url, {});
     var result = await response.json();
     var list = result.content;

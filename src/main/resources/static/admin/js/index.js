@@ -72,7 +72,7 @@ switch (current_day) {
 }
 
 async function thongke() {
-    var url = 'http://localhost:8080/api/statistic/admin/revenue-this-month';
+    var url = 'https://lmsdtm-production.up.railway.app/api/statistic/admin/revenue-this-month';
     const response = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -81,7 +81,7 @@ async function thongke() {
     var result = await response.text();
     document.getElementById("doanhThu").innerHTML = formatmoney(result)
 
-    var url = 'http://localhost:8080/api/statistic/admin/number-user';
+    var url = 'https://lmsdtm-production.up.railway.app/api/statistic/admin/number-user';
     const res = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -91,7 +91,7 @@ async function thongke() {
     document.getElementById("soLuongNV").innerHTML = result
 
 
-    var url = 'http://localhost:8080/api/statistic/admin/number-course';
+    var url = 'https://lmsdtm-production.up.railway.app/api/statistic/admin/number-course';
     const resp = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -101,7 +101,7 @@ async function thongke() {
     document.getElementById("soLuongMH").innerHTML = result
 
 
-    var url = 'http://localhost:8080/api/statistic/admin/number-exam';
+    var url = 'https://lmsdtm-production.up.railway.app/api/statistic/admin/number-exam';
     const respo = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -110,7 +110,7 @@ async function thongke() {
     var result = await respo.text();
     document.getElementById("doanhThuNgay").innerHTML = result
 
-    var url = 'http://localhost:8080/api/statistic/admin/number-teacher';
+    var url = 'https://lmsdtm-production.up.railway.app/api/statistic/admin/number-teacher';
     const respon = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -119,7 +119,7 @@ async function thongke() {
     var result = await respon.text();
     document.getElementById("donhoanthanh").innerHTML = (result)
 
-    var url = 'http://localhost:8080/api/statistic/admin/number-user-this-month';
+    var url = 'https://lmsdtm-production.up.railway.app/api/statistic/admin/number-user-this-month';
     const respons = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token

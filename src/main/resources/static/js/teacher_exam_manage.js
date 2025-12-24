@@ -3,7 +3,7 @@ var listPhanThi = [];
 var lessonLink = '';
 
 async function loadCourseSelectTeacher(){
-  const url = 'http://localhost:8080/api/course/public/find-all';
+  const url = 'https://lmsdtm-production.up.railway.app/api/course/public/find-all';
   const res = await fetch(url, { method:'GET' });
   if(!res.ok){ return; }
   const list = await res.json();
@@ -15,7 +15,7 @@ async function loadCourseSelectTeacher(){
 
 async function loadCategoriesLesson(){
   try{
-    const res = await fetch('http://localhost:8080/api/category/public/find-by-type?type=PHAN_THI');
+    const res = await fetch('https://lmsdtm-production.up.railway.app/api/category/public/find-by-type?type=PHAN_THI');
     if(!res.ok) return;
     const list = await res.json();
     const selAdd = document.getElementById('danhmucphanthi');

@@ -146,9 +146,9 @@
 
         <h2 class="titlepage">Khoá học online nổi bật</h2>
         <div class="button-container mb-3">
-            <a href="http://localhost:8080/" class="btn btn-secondary " id="allCourses">Tất cả</a>
-            <a id="coursefree" href="http://localhost:8080/?type=free" class="btn btn-secondary">Miễn phí</a>
-            <a id="coursepaid" href="http://localhost:8080/?type=paid" class="btn btn-secondary">Có phí</a>
+            <a href="https://lmsdtm-production.up.railway.app/" class="btn btn-secondary " id="allCourses">Tất cả</a>
+            <a id="coursefree" href="https://lmsdtm-production.up.railway.app/?type=free" class="btn btn-secondary">Miễn phí</a>
+            <a id="coursepaid" href="https://lmsdtm-production.up.railway.app/?type=paid" class="btn btn-secondary">Có phí</a>
         </div>
 
         <div class="sectioncontent">
@@ -170,7 +170,7 @@
         const size = 9; // Số lượng khóa học trên mỗi trang
 
         async function loadKhoaHoc(type, page) {
-            var url = `http://localhost:8080/api/course/public/courses?type=${type}&page=${page}&size=${size}&sort=id,desc`;
+            var url = `https://lmsdtm-production.up.railway.app/api/course/public/courses?type=${type}&page=${page}&size=${size}&sort=id,desc`;
             const response = await fetch(url);
             const result = await response.json();
             console.log(result)

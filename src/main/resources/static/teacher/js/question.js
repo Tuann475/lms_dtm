@@ -18,7 +18,7 @@ function ensureLessonSkill(cb){
     try {
         var id = new URL(document.URL).searchParams.get('exam');
         if(!id){ if(cb) cb(); return; }
-        fetch('http://localhost:8080/api/lesson/public/findById?id=' + id)
+        fetch('https://lmsdtm-production.up.railway.app/api/lesson/public/findById?id=' + id)
             .then(r=> r.ok? r.json(): null)
             .then(j=>{ if(j && j.skill){ lessonSkill = j.skill; console.log('[TeacherQuestion] fetched skill =', lessonSkill); } if(cb) cb(); })
             .catch(e=>{ console.warn('Không lấy được skill', e); if(cb) cb(); });
@@ -59,7 +59,7 @@ async function loadQuestion(){
     var id = uls.searchParams.get('exam');
     if(!id){ console.warn('Thiếu exam id'); return; }
     try { if($.fn.DataTable.isDataTable('#example')) { $('#example').DataTable().destroy(); } } catch(e){}
-    var url = 'http://localhost:8080/api/question/public/find-by-lesson?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/question/public/find-by-lesson?id=' + id;
     const response = await fetch(url, { method:'GET' });
     if(!response.ok){ console.error('Không tải được câu hỏi', response.status); return; }
     var temp = await response.json();
@@ -67,7 +67,7 @@ async function loadQuestion(){
 
     // Fetch lesson to get skill
     try {
-        const lessonResp = await fetch('http://localhost:8080/api/lesson/public/findById?id=' + id);
+        const lessonResp = await fetch('https://lmsdtm-production.up.railway.app/api/lesson/public/findById?id=' + id);
         if (lessonResp.status < 300) {
             const lessonObj = await lessonResp.json();
             lessonSkill = lessonObj.skill || null;
@@ -163,7 +163,7 @@ async function saveCauHoi(){
         questionType: effectiveQuestionType,
         lesson: { id: id }
     };
-    const response = await fetch('http://localhost:8080/api/question/admin/create-update', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/question/admin/create-update', {
         method:'POST',
         headers: new Headers({ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }),
         body: JSON.stringify(cauhoi)
@@ -174,7 +174,7 @@ async function saveCauHoi(){
 }
 
 async function loadAQuestion(id){
-    const resp = await fetch('http://localhost:8080/api/question/public/findById?id=' + id);
+    const resp = await fetch('https://lmsdtm-production.up.railway.app/api/question/public/findById?id=' + id);
     if(!resp.ok){ toastr.error('Không tải được câu hỏi'); return; }
     const result = await resp.json();
     var idEl = document.getElementById('idcauhoi'); if(idEl) idEl.value = result.id;
@@ -216,7 +216,7 @@ function setIdQuestion(id){
 
 async function deleteQuestion(id){
     if(!confirm('Bạn chắc chắn muốn xóa câu hỏi này?')) return;
-    var url = 'http://localhost:8080/api/question/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/question/admin/delete?id=' + id;
     const resp = await fetch(url, { method:'DELETE', headers: new Headers({ 'Authorization':'Bearer '+token }) });
     if(resp.status < 300){ toastr.success('Xóa thành công!'); loadQuestion(); }
     else if(resp.status === exceptionCode){ try { const r = await resp.json(); toastr.warning(r.defaultMessage); } catch(e){ toastr.warning('Lỗi'); } }
@@ -225,7 +225,7 @@ async function deleteQuestion(id){
 
 async function deleteAnw(id){
     if(!confirm('Bạn chắc chắn muốn xóa câu trả lời này?')) return;
-    const resp = await fetch('http://localhost:8080/api/answer/admin/delete?id=' + id, { method:'DELETE', headers: new Headers({ 'Authorization':'Bearer '+token }) });
+    const resp = await fetch('https://lmsdtm-production.up.railway.app/api/answer/admin/delete?id=' + id, { method:'DELETE', headers: new Headers({ 'Authorization':'Bearer '+token }) });
     if(resp.status < 300){ toastr.success('Xóa thành công!'); loadQuestion(); }
     else if(resp.status === exceptionCode){ try { const r = await resp.json(); toastr.warning(r.defaultMessage); } catch(e){ toastr.warning('Lỗi'); } }
     else { toastr.error('Xóa đáp án thất bại'); }
@@ -235,7 +235,7 @@ async function saveCauTraLoi(){
     const qId = document.getElementById('idquestion')? document.getElementById('idquestion').value : null;
     if(!qId){ toastr.error('Thiếu ID câu hỏi'); return; }
     let qType = null;
-    try { const resp = await fetch('http://localhost:8080/api/question/public/findById?id=' + qId); if(resp.ok){ const q = await resp.json(); qType = (q.questionType||'').toUpperCase(); } } catch(e){ }
+    try { const resp = await fetch('https://lmsdtm-production.up.railway.app/api/question/public/findById?id=' + qId); if(resp.ok){ const q = await resp.json(); qType = (q.questionType||'').toUpperCase(); } } catch(e){ }
     const txtMcqEl = document.getElementById('tieudectl');
     const txtFillEl = document.getElementById('tieudectl_text');
     let rawTitle=''; let isFill=false;
@@ -249,20 +249,20 @@ async function saveCauTraLoi(){
         question: { id: qId },
         answerType: isFill? 'FILL' : null
     };
-    const resp = await fetch('http://localhost:8080/api/answer/admin/create-update', { method:'POST', headers: new Headers({ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }), body: JSON.stringify(payload) });
+    const resp = await fetch('https://lmsdtm-production.up.railway.app/api/answer/admin/create-update', { method:'POST', headers: new Headers({ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }), body: JSON.stringify(payload) });
     if(resp.status < 300){ toastr.success('Thêm/sửa đáp án thành công'); loadQuestion(); $('#addcautl').modal('hide'); }
     else if(resp.status === exceptionCode){ try { const err = await resp.json(); toastr.warning(err.defaultMessage||'Lỗi'); } catch(e){ toastr.warning('Lỗi'); } }
     else { toastr.error('Lưu đáp án thất bại'); }
 }
 
 async function loadAAnsewr(id, idquestion){
-    const aResp = await fetch('http://localhost:8080/api/answer/public/findById?id=' + id);
+    const aResp = await fetch('https://lmsdtm-production.up.railway.app/api/answer/public/findById?id=' + id);
     if(!aResp.ok){ toastr.error('Không tải được đáp án'); return; }
     const result = await aResp.json();
     var idAns = document.getElementById('iddapan'); if(idAns) idAns.value = result.id;
     var idQ = document.getElementById('idquestion'); if(idQ) idQ.value = idquestion;
     let qType = null;
-    try { const qResp = await fetch('http://localhost:8080/api/question/public/findById?id=' + idquestion); if(qResp.ok){ const q = await qResp.json(); qType = (q.questionType||'').toUpperCase(); } } catch(e){}
+    try { const qResp = await fetch('https://lmsdtm-production.up.railway.app/api/question/public/findById?id=' + idquestion); if(qResp.ok){ const q = await qResp.json(); qType = (q.questionType||'').toUpperCase(); } } catch(e){}
     const txtMcqEl = document.getElementById('tieudectl');
     const txtFillEl = document.getElementById('tieudectl_text');
     const hint = document.getElementById('hintFill');
@@ -291,7 +291,7 @@ async function generateSpeakingAudio(){
         if(!aiRes.ok){ let errTxt = await aiRes.text(); toastr.error('AI thất bại ('+aiRes.status+'): '+(errTxt||'Không rõ')); return; }
         const blob = await aiRes.blob();
         const fd = new FormData(); fd.append('file', new File([blob], 'speaking-q.mp3', { type:'audio/mpeg' }));
-        const upRes = await fetch('http://localhost:8080/api/public/upload-file', { method:'POST', body: fd });
+        const upRes = await fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', { method:'POST', body: fd });
         if(!upRes.ok){ let t = await upRes.text(); toastr.error('Upload audio thất bại ('+upRes.status+'): '+t); return; }
         const link = await upRes.text();
         var sa = document.getElementById('speakingAudio'); if(sa){ sa.src = link; }

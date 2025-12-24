@@ -2,7 +2,7 @@ async function loadUnit() {
     $('#example').DataTable().destroy();
     var chapter = document.getElementById("chapterselect").value
     var chapter = document.getElementById("chapterselect").value
-    var url = 'http://localhost:8080/api/unit/all/find-by-chapter?chapter=' + chapter;
+    var url = 'https://lmsdtm-production.up.railway.app/api/unit/all/find-by-chapter?chapter=' + chapter;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -40,7 +40,7 @@ async function loadAnUnit() {
     var uls = new URL(document.URL)
     var id = uls.searchParams.get("id");
     if (id != null) {
-        var url = 'http://localhost:8080/api/unit/all/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/unit/all/findById?id=' + id;
         const response = await fetch(url, {
             method: 'GET',
             headers: new Headers({
@@ -60,7 +60,7 @@ async function loadAnUnit() {
 async function loadTTkhoahoc() {
     var uls = new URL(document.URL)
     var course = uls.searchParams.get("course");
-    var url = 'http://localhost:8080/api/course/public/findById?id=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/findById?id=' + course;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -116,7 +116,7 @@ async function saveUnit() {
     var id = uls.searchParams.get("id");
     var chapter = uls.searchParams.get("chapter");
     var course = uls.searchParams.get("course");
-    var url = 'http://localhost:8080/api/unit/teacher/create-update';
+    var url = 'https://lmsdtm-production.up.railway.app/api/unit/teacher/create-update';
 
     const filePath = document.getElementById('chonfile')
     var linkFilet = await uploadFile(filePath);
@@ -168,7 +168,7 @@ async function deleteUnit(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/unit/teacher/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/unit/teacher/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({

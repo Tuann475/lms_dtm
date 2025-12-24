@@ -2,7 +2,7 @@ async function loadChapter() {
     var uls = new URL(document.URL)
     var khoahoc = uls.searchParams.get("khoahoc");
 
-    var url = 'http://localhost:8080/api/course/public/findById?id=' + khoahoc;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/findById?id=' + khoahoc;
     var response = await fetch(url, {});
     var result = await response.json();
     //console.log(result)
@@ -10,7 +10,7 @@ async function loadChapter() {
     document.getElementById("danhmuckh").innerHTML = result.category.name
     document.getElementById("imgctblog").src = result.image
 
-    var url = 'http://localhost:8080/api/chapter/user/find-by-course?course=' + khoahoc;
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/user/find-by-course?course=' + khoahoc;
     var response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -40,7 +40,7 @@ async function loadChapter() {
 
 
 async function loadUnitById(id) {
-    var url = 'http://localhost:8080/api/unit/all/findById?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/unit/all/findById?id=' + id;
     var response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -83,7 +83,7 @@ async function loadUnitById(id) {
     var milisecond = result.minStudyTime * 60 * 1000;
 
     let intervalID = setInterval(async function () {
-        var url = 'http://localhost:8080/api/user-unit/user/create?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/user-unit/user/create?id=' + id;
         var response = await fetch(url, {
             method: 'POST',
             headers: new Headers({

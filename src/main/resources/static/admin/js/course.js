@@ -1,6 +1,6 @@
 async function loadCourse() {
     $('#example').DataTable().destroy();
-    var url = 'http://localhost:8080/api/course/public/find-all';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/find-all';
     const response = await fetch(url, {
         method: 'GET'
     });
@@ -31,7 +31,7 @@ async function loadCourse() {
 async function getInforKhoaHoc() {
     var id = window.location.search.split('=')[1];
     if (id != null) {
-        var url = 'http://localhost:8080/api/course/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/course/public/findById?id=' + id;
         try {
             var response = await fetch(url);
 
@@ -208,7 +208,7 @@ async function saveCourse() {
 
     // Gửi yêu cầu tới API
     try {
-        const response = await fetch('http://localhost:8080/api/course/admin/create-update', {
+        const response = await fetch('https://lmsdtm-production.up.railway.app/api/course/admin/create-update', {
             method: 'POST',
             headers: new Headers({
                 'Authorization': 'Bearer ' + token,
@@ -247,7 +247,7 @@ async function loadACourse() {
     var id = window.location.search.split('=')[1];
     if (id != null) {
         document.getElementById("btnthemkhoahoc").innerHTML = `<i class="fa fa-edit"></i> Cập nhật khóa học`
-        var url = 'http://localhost:8080/api/course/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/course/public/findById?id=' + id;
         var response = await fetch(url, {});
         var result = await response.json();
 
@@ -306,7 +306,7 @@ async function loadACourse() {
 }
 
 async function loadACamKet(id) {
-    var url = 'http://localhost:8080/api/promise/public/findById?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/promise/public/findById?id=' + id;
     var response = await fetch(url, {});
     var result = await response.json();
     document.getElementById("idcamketupdate").value = result.id
@@ -318,7 +318,7 @@ async function updateCamKet() {
         "id": document.getElementById("idcamketupdate").value,
         "content": document.getElementById("camketupdate").value,
     }
-    const response = await fetch('http://localhost:8080/api/promise/admin/update', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/promise/admin/update', {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token,
@@ -341,7 +341,7 @@ async function updateCamKet() {
 async function uploadAnh(filePath) {
     const formData = new FormData()
     formData.append("file", filePath.files[0])
-    var urlUpload = 'http://localhost:8080/api/public/upload-file';
+    var urlUpload = 'https://lmsdtm-production.up.railway.app/api/public/upload-file';
     const res = await fetch(urlUpload, {
         method: 'POST',
         body: formData
@@ -388,7 +388,7 @@ async function xoaKhoaHoc(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/course/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -410,7 +410,7 @@ async function xoaCamKet(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/promise/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/promise/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -430,7 +430,7 @@ async function xoaCamKet(id) {
 
 async function loadCourseSelectAddBaiThi() {
     $('#example').DataTable().destroy();
-    var url = 'http://localhost:8080/api/course/public/find-all';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/find-all';
     const response = await fetch(url, {
         method: 'GET'
     });
@@ -445,7 +445,7 @@ async function loadCourseSelectAddBaiThi() {
 
 async function loadDanhSachHocVien(id) {
     $('#exampletr').DataTable().destroy();
-    var url = 'http://localhost:8080/api/course-user/admin/find-by-course?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course-user/admin/find-by-course?id=' + id;
     var response = await fetch(url, {
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -477,7 +477,7 @@ async function xoaKhoaHocUser(id, idcourse) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/course-user/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course-user/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -499,7 +499,7 @@ async function loadCourseSelectBaiThi() {
     try { if($.fn.DataTable.isDataTable('#example')){ $('#example').DataTable().destroy(); } } catch(e){}
     var u = new URL(document.URL);
     var id = u.searchParams.get('id'); // allow direct id param
-    var url = 'http://localhost:8080/api/course/public/find-all';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/find-all';
     const response = await fetch(url, { method: 'GET' });
     if(!response.ok){ console.warn('Không tải danh sách khóa học'); return; }
     var list = await response.json();
@@ -515,7 +515,7 @@ async function loadCourseSelectBaiThi() {
 async function selectedonchang() {
     $('#example').DataTable().destroy();
     var courseId = document.getElementById("khoahocbaithi").value // Lấy id từ URL
-    var url = `http://localhost:8080/admin/addthanhvien?id=${courseId}`;
+    var url = `https://lmsdtm-production.up.railway.app/admin/addthanhvien?id=${courseId}`;
     window.location.href = url;
 }
 
@@ -524,7 +524,7 @@ async function loadThongTinHocVien() {
     var uls = new URL(document.URL)
     var id = uls.searchParams.get("id");
     var course = uls.searchParams.get("course");
-    var url = 'http://localhost:8080/api/exam/admin/thong-tin-hoc-vien?course=' + course + '&user=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/admin/thong-tin-hoc-vien?course=' + course + '&user=' + id;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -582,7 +582,7 @@ async function loadThongTinHocVienChungChi() {
     var uls = new URL(document.URL)
     var id = uls.searchParams.get("id");
     var course = uls.searchParams.get("course");
-    var url = 'http://localhost:8080/api/exam/admin/thong-tin-hoc-vien?course=' + course + '&user=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/admin/thong-tin-hoc-vien?course=' + course + '&user=' + id;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -601,7 +601,7 @@ async function thongKe() {
     var uls = new URL(document.URL)
     var id = uls.searchParams.get("id");
     var course = uls.searchParams.get("course");
-    var url = 'http://localhost:8080/api/chapter/all/find-by-course?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/all/find-by-course?course=' + course;
     var response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -630,7 +630,7 @@ async function thongKe() {
     document.getElementById("chuongtk").innerHTML += main
 
 
-    var url = 'http://localhost:8080/api/user-unit/admin/thong-ke?course=' + course + '&userId=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/user-unit/admin/thong-ke?course=' + course + '&userId=' + id;
     var response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -672,7 +672,7 @@ async function updateCC() {
     var id = uls.searchParams.get("id");
     var course = uls.searchParams.get("course");
     var level = document.getElementById("level").value
-    var url = 'http://localhost:8080/api/course-user/admin/update-cc?courseId=' + course + "&userId=" + id + '&level=' + level;
+    var url = 'https://lmsdtm-production.up.railway.app/api/course-user/admin/update-cc?courseId=' + course + "&userId=" + id + '&level=' + level;
     const response = await fetch(url, {
         method: 'POST',
         headers: new Headers({
@@ -713,7 +713,7 @@ async function taoChungChi(el, event) {
     }
 
     try {
-        var url = 'http://localhost:8080/api/course-user/admin/update-cc?courseId=' + course + '&userId=' + id + '&level=' + encodeURIComponent(levelSelect.value);
+        var url = 'https://lmsdtm-production.up.railway.app/api/course-user/admin/update-cc?courseId=' + course + '&userId=' + id + '&level=' + encodeURIComponent(levelSelect.value);
         const response = await fetch(url, {
             method: 'POST',
             headers: new Headers({

@@ -8,7 +8,7 @@ async function loadUserExamStats() {
     }
     try {
         // Gọi lại API thống kê điểm trung bình theo ngày (toàn bộ hệ thống hoặc theo user nếu backend hỗ trợ)
-        var url = 'http://localhost:8080/api/exam/statistic/avg-by-date';
+        var url = 'https://lmsdtm-production.up.railway.app/api/exam/statistic/avg-by-date';
         var response = await fetch(url, { method: 'GET' });
         if (!response.ok) {
             throw new Error('Request failed: ' + response.status);
@@ -106,7 +106,7 @@ async function loadUserPracticeStats() {
         msgEl.innerText = 'Đang tải thống kê ôn luyện...';
     }
     try {
-        var url = 'http://localhost:8080/api/practice/user/stats-by-day';
+        var url = 'https://lmsdtm-production.up.railway.app/api/practice/user/stats-by-day';
         var response = await fetch(url, { method: 'GET' });
         if (!response.ok) {
             throw new Error('Request failed: ' + response.status);
@@ -201,7 +201,7 @@ async function loadUserPracticeStats() {
 async function loadUserPracticeTotalSessions() {
     try {
         var el = document.getElementById('stat2-total-practices');
-        var response = await fetch('http://localhost:8080/api/practice/user/total-sessions', { method: 'GET' });
+        var response = await fetch('https://lmsdtm-production.up.railway.app/api/practice/user/total-sessions', { method: 'GET' });
         if (!response.ok) {
             throw new Error('Request failed: ' + response.status);
         }
@@ -217,7 +217,7 @@ async function loadUserPracticeTotalSessions() {
 async function loadUserPracticeAverageScore() {
     try {
         var el = document.getElementById('stat2-avg-practice-score');
-        var response = await fetch('http://localhost:8080/api/practice/user/overall-average', { method: 'GET' });
+        var response = await fetch('https://lmsdtm-production.up.railway.app/api/practice/user/overall-average', { method: 'GET' });
         if (!response.ok) {
             throw new Error('Request failed: ' + response.status);
         }

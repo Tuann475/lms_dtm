@@ -1,7 +1,7 @@
 async function loadTaiLieu() {
     $('#example').DataTable().destroy();
     var course = document.getElementById("khoahocselect").value
-    var url = 'http://localhost:8080/api/document/all/find-by-course?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/document/all/find-by-course?course=' + course;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -35,7 +35,7 @@ async function saveTaiLieu() {
     var uls = new URL(document.URL);
     var id = uls.searchParams.get("id");
     var khoahoc = uls.searchParams.get("khoahoc");
-    var url = 'http://localhost:8080/api/document/teacher/create-update';
+    var url = 'https://lmsdtm-production.up.railway.app/api/document/teacher/create-update';
 
     const filePath = document.getElementById('chonfile');
 
@@ -116,7 +116,7 @@ async function deleteTaiLieu(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/document/teacher/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/document/teacher/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({

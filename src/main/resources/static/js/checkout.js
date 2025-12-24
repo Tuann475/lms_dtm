@@ -2,8 +2,8 @@ async function requestPayMentMomo() {
     window.localStorage.setItem('ghichu', document.getElementById("ghichu").value);
     window.localStorage.setItem('course', window.location.search.split('=')[1]);
 
-    var returnurl = 'http://localhost:8080/thanhcong';
-    var urlinit = 'http://localhost:8080/api/urlpayment';
+    var returnurl = 'https://lmsdtm-production.up.railway.app/thanhcong';
+    var urlinit = 'https://lmsdtm-production.up.railway.app/api/urlpayment';
     var paymentDto = {
         "courseId": window.location.search.split('=')[1],
         "content": "Thanh toán khóa học",
@@ -53,7 +53,7 @@ async function paymentMomo() {
         "orderIdMomo": orderId,
         "courseId": course,
     }
-    var url = 'http://localhost:8080/api/course-user/user/create';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course-user/user/create';
     var token = localStorage.getItem("token");
     const res = await fetch(url, {
         method: 'POST',

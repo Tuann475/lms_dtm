@@ -5,7 +5,7 @@ async function loadExam() {
         $('#example').DataTable().destroy();
     }
     var course = document.getElementById("khoahocbaithi").value;
-    var url = 'http://localhost:8080/api/exam/public/findAll';
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/public/findAll';
     if (course != -1) {
         url += '?course=' + course
     }
@@ -53,7 +53,7 @@ async function loadExam() {
 }
 
 async function updateTrangThai(e, id) {
-    const response = await fetch('http://localhost:8080/api/exam/admin/update-trangthai?id=' + id + '&trangthai=' + e.value, {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/exam/admin/update-trangthai?id=' + id + '&trangthai=' + e.value, {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token
@@ -73,7 +73,7 @@ async function loadAExam() {
 
     if (id != null) {
         document.getElementById("btnthemdethi").innerHTML = `<i class="fa fa-edit"></i> Cập nhật đề thi`
-        var url = 'http://localhost:8080/api/exam/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/exam/public/findById?id=' + id;
         var response = await fetch(url, {});
         var result = await response.json();
         console.log(result);
@@ -84,7 +84,7 @@ async function loadAExam() {
         await loadCourseSelectAddBaiThi();
         document.getElementById("khoahocbaithi").value = result.course.id
 
-        var url = 'http://localhost:8080/api/lesson/public/find-by-exam?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/lesson/public/find-by-exam?id=' + id;
         var response = await fetch(url, {});
         var list = await response.json();
         var main = '';
@@ -128,7 +128,7 @@ function renderFilePreview(skill, link){
     previewDiv.style.display='block';
 }
 async function loadALesson(id) {
-    var url = 'http://localhost:8080/api/lesson/public/findById?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/lesson/public/findById?id=' + id;
     var response = await fetch(url, {});
     var result = await response.json();
     document.getElementById("idlesson").value = result.id
@@ -188,7 +188,7 @@ async function updateLesson() {
         try {
             const formData = new FormData();
             formData.append('file', filePath.files[0]);
-            const res = await fetch('http://localhost:8080/api/public/upload-file', { method:'POST', body: formData });
+            const res = await fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', { method:'POST', body: formData });
             if(res.ok){ finalLink = await res.text(); }
         } catch(e){ toastr.error('Lỗi upload file mới'); }
     }
@@ -209,7 +209,7 @@ async function updateLesson() {
     };
 
     // Gửi yêu cầu cập nhật phần thi
-    const response = await fetch('http://localhost:8080/api/lesson/admin/update', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/lesson/admin/update', {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token,
@@ -321,7 +321,7 @@ async function saveExam() {
     }
 
     // Gửi yêu cầu POST để thêm/sửa bài thi
-    const response = await fetch('http://localhost:8080/api/exam/admin/create-update', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/exam/admin/create-update', {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token,
@@ -368,7 +368,7 @@ async function addPhanThi() {
         try {
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
-            const res = await fetch('http://localhost:8080/api/public/upload-file', { method: 'POST', body: formData });
+            const res = await fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', { method: 'POST', body: formData });
             if (res.ok) { linkFile = await res.text(); } else { toastr.warning('Upload file thất bại'); }
         } catch(e){ toastr.error('Lỗi upload file'); }
     } else if(kynang === 'SPEAKING') {
@@ -380,7 +380,7 @@ async function addPhanThi() {
                 // re-upload blob để lấy linkFile
                 const fd = new FormData();
                 fd.append('file', new File([blob], 'speaking.mp3', { type: 'audio/mpeg' }));
-                const upRes = await fetch('http://localhost:8080/api/public/upload-file', { method:'POST', body: fd });
+                const upRes = await fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', { method:'POST', body: fd });
                 if(upRes.ok){ linkFile = await upRes.text(); toastr.success('Đã tạo audio SPEAKING bằng AI'); } else { toastr.warning('Upload audio AI thất bại'); }
             } else {
                 const errText = await aiRes.text();
@@ -431,7 +431,7 @@ async function xoaPhanThi(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/lesson/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/lesson/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -459,7 +459,7 @@ async function xoaBaiThi(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/exam/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -477,7 +477,7 @@ async function xoaBaiThi(id) {
 }
 
 async function loadDsLesson(id) {
-    var url = 'http://localhost:8080/api/lesson/public/find-by-exam?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/lesson/public/find-by-exam?id=' + id;
     var response = await fetch(url, {});
     var list = await response.json();
     var main = '';

@@ -1,6 +1,6 @@
 async function loadTaiLieuKh(course) {
     $('#example').DataTable().destroy();
-    var url = 'http://localhost:8080/api/document/all/find-by-course?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/document/all/find-by-course?course=' + course;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({

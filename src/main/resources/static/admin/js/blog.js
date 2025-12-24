@@ -3,7 +3,7 @@ var size = 10;
 
 async function loadBlog() {
     $('#example').DataTable().destroy();
-    var url = 'http://localhost:8080/api/blog/public/findAllList';
+    var url = 'https://lmsdtm-production.up.railway.app/api/blog/public/findAllList';
     const response = await fetch(url, {
         method: 'GET'
     });
@@ -45,11 +45,11 @@ async function saveBlog() {
 
     var uls = new URL(document.URL);
     var id = uls.searchParams.get("id");
-    var url = 'http://localhost:8080/api/blog/admin/create-update';
+    var url = 'https://lmsdtm-production.up.railway.app/api/blog/admin/create-update';
 
     const formData = new FormData();
     formData.append("file", filePath.files[0]);
-    var urlUpload = 'http://localhost:8080/api/public/upload-file';
+    var urlUpload = 'https://lmsdtm-production.up.railway.app/api/public/upload-file';
     const res = await fetch(urlUpload, {
         method: 'POST',
         body: formData
@@ -100,7 +100,7 @@ async function saveBlog() {
 async function loadABlog() {
     var id = window.location.search.split('=')[1];
     if (id != null) {
-        var url = 'http://localhost:8080/api/blog/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/blog/public/findById?id=' + id;
         const response = await fetch(url, {
             method: 'GET'
         });
@@ -119,7 +119,7 @@ async function deleteBlog(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/blog/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/blog/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({

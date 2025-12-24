@@ -1,5 +1,5 @@
 async function loadDanhMuc() {
-    var url = 'http://localhost:8080/api/category/public/find-by-type?type=BAI_THI';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/public/find-by-type?type=BAI_THI';
     const response = await fetch(url, {});
     var list = await response.json();
     var main = '';
@@ -11,7 +11,7 @@ async function loadDanhMuc() {
 
 
 async function loadDanhMucThiOnline() {
-    var url = 'http://localhost:8080/api/category/public/find-by-type?type=BAI_THI';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/public/find-by-type?type=BAI_THI';
     const response = await fetch(url, {});
     var list = await response.json();
     var main = `<li class="nav-item w-auto">
@@ -27,7 +27,7 @@ async function loadDanhMucThiOnline() {
 
 
 async function loadDanhMucTimKhoaHoc() {
-    var url = 'http://localhost:8080/api/category/public/find-by-type?type=KHOA_HOC';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/public/find-by-type?type=KHOA_HOC';
     const response = await fetch(url, {});
     var list = await response.json();
     console.log(list)

@@ -3,7 +3,7 @@ var size = 10;
 
 async function loadCategory() {
     $('#example').DataTable().destroy();
-    var url = 'http://localhost:8080/api/category/public/find-by-type';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/public/find-by-type';
     const response = await fetch(url, {
         method: 'GET'
     });
@@ -25,7 +25,7 @@ async function loadCategory() {
 }
 
 async function loadTypeCategory() {
-    var url = 'http://localhost:8080/api/category/public/get-all-category-type';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/public/get-all-category-type';
     const response = await fetch(url, {});
     var list = await response.json();
     var main = '';
@@ -37,7 +37,7 @@ async function loadTypeCategory() {
 
 
 async function loadACategory(id) {
-    var url = 'http://localhost:8080/api/category/admin/findById?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/admin/findById?id=' + id;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -65,9 +65,9 @@ async function saveCategory() {
         return;
     }
 
-    var url = 'http://localhost:8080/api/category/admin/create';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/admin/create';
     if (id != "" && id != null) {
-        url = 'http://localhost:8080/api/category/admin/update';
+        url = 'https://lmsdtm-production.up.railway.app/api/category/admin/update';
     }
     var category = {
         "id": id,
@@ -98,7 +98,7 @@ async function deleteCategory(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/category/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -116,7 +116,7 @@ async function deleteCategory(id) {
 }
 
 async function loadCategoryProduct() {
-    var url = 'http://localhost:8080/api/category/public/findAll';
+    var url = 'https://lmsdtm-production.up.railway.app/api/category/public/findAll';
     const response = await fetch(url, {
         method: 'GET'
     });
@@ -131,7 +131,7 @@ async function loadCategoryProduct() {
 
 
 async function loadCategoryBaiThi() {
-    var response = await fetch('http://localhost:8080/api/category/public/find-by-type?type=PHAN_THI', {});
+    var response = await fetch('https://lmsdtm-production.up.railway.app/api/category/public/find-by-type?type=PHAN_THI', {});
     var list = await response.json();
     console.log(list)
     var main = '';
@@ -144,7 +144,7 @@ async function loadCategoryBaiThi() {
 
 
 async function loadCategoryKhoaHoc() {
-    var response = await fetch('http://localhost:8080/api/category/public/find-by-type?type=KHOA_HOC', {});
+    var response = await fetch('https://lmsdtm-production.up.railway.app/api/category/public/find-by-type?type=KHOA_HOC', {});
     var list = await response.json();
     var main = '';
     for (i = 0; i < list.length; i++) {

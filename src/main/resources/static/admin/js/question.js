@@ -4,7 +4,7 @@ async function loadQuestion() {
     var uls = new URL(document.URL)
     var id = uls.searchParams.get("exam");
     $('#example').DataTable().destroy();
-    var url = 'http://localhost:8080/api/question/public/find-by-lesson?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/question/public/find-by-lesson?id=' + id;
     const response = await fetch(url, {
         method: 'GET'
     });
@@ -15,7 +15,7 @@ async function loadQuestion() {
 
     // Fetch lesson to get reliable skill even if no questions yet
     try {
-        const lessonResp = await fetch('http://localhost:8080/api/lesson/public/findById?id=' + id);
+        const lessonResp = await fetch('https://lmsdtm-production.up.railway.app/api/lesson/public/findById?id=' + id);
         if (lessonResp.status < 300) {
             const lessonObj = await lessonResp.json();
             lessonSkill = lessonObj.skill || null;
@@ -145,7 +145,7 @@ async function saveCauHoi() {
         "questionType": effectiveQuestionType,
         lesson: { "id": id }
     }
-    const response = await fetch('http://localhost:8080/api/question/admin/create-update', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/question/admin/create-update', {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token,
@@ -164,7 +164,7 @@ async function saveCauHoi() {
 }
 
 async function loadAQuestion(id) {
-    var url = 'http://localhost:8080/api/question/public/findById?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/question/public/findById?id=' + id;
     const response = await fetch(url, {});
     var result = await response.json();
     console.log(result);
@@ -213,7 +213,7 @@ function setIdQuestion(id) {
 async function deleteQuestion(id) {
     var con = confirm("Bạn chắc chắn muốn xóa câu hỏi này?");
     if (con === false) { return; }
-    var url = 'http://localhost:8080/api/question/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/question/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -232,7 +232,7 @@ async function deleteQuestion(id) {
 async function deleteAnw(id) {
     var con = confirm("Bạn chắc chắn muốn xóa câu trả lời này?");
     if (con === false) { return; }
-    var url = 'http://localhost:8080/api/answer/admin/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/answer/admin/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -255,7 +255,7 @@ async function saveCauTraLoi() {
     if(!qId){ toastr.error('Thiếu ID câu hỏi'); return; }
     let qType = null;
     try {
-        const resp = await fetch('http://localhost:8080/api/question/public/findById?id=' + qId);
+        const resp = await fetch('https://lmsdtm-production.up.railway.app/api/question/public/findById?id=' + qId);
         if(resp.ok){ const q = await resp.json(); qType = (q.questionType||'').toUpperCase(); }
     } catch(e){ console.warn('Không lấy được questionType', e); }
     // Determine input source
@@ -279,7 +279,7 @@ async function saveCauTraLoi() {
         question: { id: qId },
         answerType: isFill ? 'FILL' : null // MCQ or unspecified => null
     };
-    const response = await fetch('http://localhost:8080/api/answer/admin/create-update', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/answer/admin/create-update', {
         method: 'POST',
         headers: new Headers({ 'Authorization': 'Bearer '+token, 'Content-Type':'application/json' }),
         body: JSON.stringify(answerPayload)
@@ -290,7 +290,7 @@ async function saveCauTraLoi() {
 }
 
 async function loadAAnsewr(id, idquestion) {
-    const url = 'http://localhost:8080/api/answer/public/findById?id=' + id;
+    const url = 'https://lmsdtm-production.up.railway.app/api/answer/public/findById?id=' + id;
     const resp = await fetch(url, {});
     if(!resp.ok){ toastr.error('Không tải được đáp án'); return; }
     const result = await resp.json();
@@ -298,7 +298,7 @@ async function loadAAnsewr(id, idquestion) {
     document.getElementById('idquestion').value = idquestion;
     // Fetch question to know type
     let qType = null;
-    try { const qResp = await fetch('http://localhost:8080/api/question/public/findById?id=' + idquestion); if(qResp.ok){ const q = await qResp.json(); qType = (q.questionType||'').toUpperCase(); } } catch(e){ }
+    try { const qResp = await fetch('https://lmsdtm-production.up.railway.app/api/question/public/findById?id=' + idquestion); if(qResp.ok){ const q = await qResp.json(); qType = (q.questionType||'').toUpperCase(); } } catch(e){ }
     const txtMcqEl = document.getElementById('tieudectl');
     const txtFillEl = document.getElementById('tieudectl_text');
     if(qType === 'FILL'){
@@ -329,7 +329,7 @@ async function generateSpeakingAudio(){
         const blob = await aiRes.blob();
         const fd = new FormData();
         fd.append('file', new File([blob], 'speaking-q.mp3', { type:'audio/mpeg' }));
-        const upRes = await fetch('http://localhost:8080/api/public/upload-file', { method:'POST', body: fd });
+        const upRes = await fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', { method:'POST', body: fd });
         if(!upRes.ok){ let t = await upRes.text(); toastr.error('Upload audio thất bại ('+upRes.status+'): '+t); return; }
         const link = await upRes.text();
         var sa = document.getElementById('speakingAudio');

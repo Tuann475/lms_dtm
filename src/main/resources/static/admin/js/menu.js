@@ -99,7 +99,7 @@ function formatdate(dateString) {
 
 async function checkroleAdmin() {
     var token = localStorage.getItem("token");
-    var url = 'http://localhost:8080/api/admin/check-role-admin';
+    var url = 'https://lmsdtm-production.up.railway.app/api/admin/check-role-admin';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -116,13 +116,13 @@ function sendDataToAPI() {
     const token = localStorage.getItem('token');
     if (!token) {
         console.error('Token not found!');
-        window.location.replace('http://localhost:8080/login');
+        window.location.replace('https://lmsdtm-production.up.railway.app/login');
         return;
     }
     const data = [
         {name: "Category 1", description: "Description for Category 1"},
     ];
-    fetch('http://localhost:8080/v1/category', {
+    fetch('https://lmsdtm-production.up.railway.app/v1/category', {
         method: 'POST', // Phương thức POST
         headers: {
             'Content-Type': 'application/json',

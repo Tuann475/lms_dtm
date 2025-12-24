@@ -1,7 +1,7 @@
 var sizeexam = 4;
 
 async function loadDeThi(page) {
-    var url = 'http://localhost:8080/api/exam/public/find-all-page?page=' + page + '&size=' + sizeexam + '&sort=id,desc';
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/public/find-all-page?page=' + page + '&size=' + sizeexam + '&sort=id,desc';
     const response = await fetch(url, {});
     var result = await response.json();
     console.log(result);
@@ -42,7 +42,7 @@ async function loadCtDeThi() {
         var uls = new URL(document.URL);
         var id = uls.searchParams.get("id");
 
-        var url = 'http://localhost:8080/api/lesson/public/find-by-exam?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/lesson/public/find-by-exam?id=' + id;
         var response = await fetch(url);
         var list = await response.json();
         console.log(list);
@@ -74,7 +74,7 @@ async function loadCtDeThi() {
             return;
         }
 
-        response = await fetch('http://localhost:8080/api/exam/user/find-by-id?id=' + id, {
+        response = await fetch('https://lmsdtm-production.up.railway.app/api/exam/user/find-by-id?id=' + id, {
             method: 'GET',
             headers: new Headers({
                 'Authorization': 'Bearer ' + token
@@ -102,7 +102,7 @@ async function loadCtDeThi() {
 async function loadThongTinDeThi() {
     var uls = new URL(document.URL)
     var exam = uls.searchParams.get("exam");
-    var url = 'http://localhost:8080/api/exam/public/findById?id=' + exam;
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/public/findById?id=' + exam;
     const response = await fetch(url, {});
     var result = await response.json();
     //console.log( result)
@@ -114,7 +114,7 @@ async function searchDeThi(page) {
     var uls = new URL(document.URL)
     var category = uls.searchParams.get("category");
     var search = uls.searchParams.get("search");
-    var url = 'http://localhost:8080/api/exam/public/find-by-param?page=' + page + '&size=' + sizeexam + '&sort=id,desc';
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/public/find-by-param?page=' + page + '&size=' + sizeexam + '&sort=id,desc';
     if (category != null && category != -1) {
         url += '&category=' + category
     }
@@ -162,7 +162,7 @@ async function loadDeThiByCourse() {
     var uls = new URL(document.URL)
     var khoahoc = uls.searchParams.get("khoahoc");
     var tenkhoahoc = uls.searchParams.get("tenkhoahoc");
-    var url = 'http://localhost:8080/api/exam/user/find-by-course-and-user?course=' + khoahoc;
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/user/find-by-course-and-user?course=' + khoahoc;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({

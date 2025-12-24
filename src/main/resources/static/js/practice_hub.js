@@ -5,7 +5,7 @@ function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&
 async function loadPracticeHub(){
   if(!token){ $('#practiceHubLoading').removeClass('alert-info').addClass('alert-warning').text('Bạn cần đăng nhập để xem luyện đề.'); return; }
   try{
-    const res = await fetch('http://localhost:8080/api/course-user/user/find-by-user', { headers: authHeaders() });
+    const res = await fetch('https://lmsdtm-production.up.railway.app/api/course-user/user/find-by-user', { headers: authHeaders() });
     if(!res.ok){ throw new Error('Không tải được khóa học'); }
     const courses = await res.json();
     if(courses.length===0){ $('#practiceHubLoading').removeClass('alert-info').addClass('alert-warning').text('Bạn chưa đăng ký khóa học nào.'); return; }
@@ -35,7 +35,7 @@ async function toggleExams(courseId){
   // If already loaded remove loading placeholder
   if(el.data('loaded')) return;
   try{
-    const res = await fetch('http://localhost:8080/api/exam/user/find-by-course-and-user?course='+courseId, { headers: authHeaders() });
+    const res = await fetch('https://lmsdtm-production.up.railway.app/api/exam/user/find-by-course-and-user?course='+courseId, { headers: authHeaders() });
     if(!res.ok){ throw new Error('Không tải được đề thi'); }
     const exams = await res.json();
     let html='';
@@ -86,7 +86,7 @@ async function startPracticeFromExam(examId){
 async function loadPracticeHubLikeMyCourse(){
   if(!token){ $('#practiceHubLoading').removeClass('alert-info').addClass('alert-warning').text('Bạn cần đăng nhập để xem luyện đề.'); return; }
   try {
-    const res = await fetch('http://localhost:8080/api/course-user/user/find-by-user', { headers: authHeaders() });
+    const res = await fetch('https://lmsdtm-production.up.railway.app/api/course-user/user/find-by-user', { headers: authHeaders() });
     if(!res.ok){ throw new Error('Không tải được khóa học'); }
     const courses = await res.json();
     if(courses.length===0){ $('#practiceHubLoading').removeClass('alert-info').addClass('alert-warning').text('Bạn chưa đăng ký khóa học nào.'); return; }
@@ -136,7 +136,7 @@ async function togglePracticeExams(courseId){
     // skeleton
     box.html('<div class="skeleton-block"><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:55%"></div><div class="skeleton-line" style="width:60%"></div></div>');
     try {
-      const res = await fetch('http://localhost:8080/api/exam/user/find-by-course-and-user?course='+courseId, { headers: authHeaders() });
+      const res = await fetch('https://lmsdtm-production.up.railway.app/api/exam/user/find-by-course-and-user?course='+courseId, { headers: authHeaders() });
       if(!res.ok){ throw new Error('Không tải được đề thi'); }
       const exams = await res.json();
       let html='';

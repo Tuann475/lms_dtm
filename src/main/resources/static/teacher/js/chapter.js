@@ -1,7 +1,7 @@
 async function loadChapter() {
     $('#example').DataTable().destroy(); // Xóa bảng hiện tại
     const course = document.getElementById("khoahocselect").value;
-    const url = `http://localhost:8080/api/chapter/all/find-by-course?course=${course}`;
+    const url = `https://lmsdtm-production.up.railway.app/api/chapter/all/find-by-course?course=${course}`;
 
     try {
         const response = await fetch(url, {
@@ -47,7 +47,7 @@ async function loadChapter() {
 
 
 async function loadAChapter(id) {
-    var url = 'http://localhost:8080/api/chapter/all/findById?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/all/findById?id=' + id;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -66,7 +66,7 @@ function cleardata() {
 }
 
 async function saveChapter() {
-    var url = 'http://localhost:8080/api/chapter/teacher/create-update';
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/teacher/create-update';
     var chapter = {
         "id": document.getElementById("idchapter").value,
         "name": document.getElementById("tenchapter").value,
@@ -109,7 +109,7 @@ async function deleteChapter(id) {
     if (con == false) {
         return;
     }
-    var url = 'http://localhost:8080/api/chapter/teacher/delete?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/teacher/delete?id=' + id;
     const response = await fetch(url, {
         method: 'DELETE',
         headers: new Headers({
@@ -133,7 +133,7 @@ async function loadChapterSelect() {
     var uls = new URL(document.URL)
     var course = uls.searchParams.get("course");
     var chapter = uls.searchParams.get("chapter");
-    var url = 'http://localhost:8080/api/chapter/all/find-by-course?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/chapter/all/find-by-course?course=' + course;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({

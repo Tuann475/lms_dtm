@@ -1,5 +1,5 @@
 async function loadKhoaHocCuaToi() {
-    var url = 'http://localhost:8080/api/course/teacher/find-by-teacher';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/teacher/find-by-teacher';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -57,7 +57,7 @@ async function loadKhoaHocCuaToi() {
 async function loadKhoaHocCuaToiSelect() {
     var uls = new URL(document.URL)
     var khoahoc = uls.searchParams.get("khoahoc");
-    var url = 'http://localhost:8080/api/course/teacher/find-by-teacher';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/teacher/find-by-teacher';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -76,7 +76,7 @@ async function loadKhoaHocCuaToiSelect() {
 async function loadKhoaHocCuaToiAdd() {
     var uls = new URL(document.URL)
     var khoahoc = uls.searchParams.get("khoahoc");
-    var url = 'http://localhost:8080/api/course/teacher/find-by-teacher';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/teacher/find-by-teacher';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({

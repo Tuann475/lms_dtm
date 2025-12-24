@@ -184,7 +184,7 @@
         fd.append('duration', recSeconds);
         uploadBarWrap.style.display='block'; uploadBar.style.width='0%'; recStatusEl.textContent='Đang tải lên...'; btnUpload.disabled=true;
         try {
-            const res = await fetch('http://localhost:8080/api/speaking/upload-cloud', { method:'POST', headers:{ 'Authorization': 'Bearer '+token }, body: fd });
+            const res = await fetch('https://lmsdtm-production.up.railway.app/api/speaking/upload-cloud', { method:'POST', headers:{ 'Authorization': 'Bearer '+token }, body: fd });
             if(!res.ok){ const err = await res.json().catch(()=>({error:'Upload lỗi'})); throw new Error(err.error || res.statusText); }
             const data = await res.json();
             recStatusEl.textContent = 'Đã tải lên Cloud'; toastr.success('Tải lên thành công'); console.log('Cloud result', data);

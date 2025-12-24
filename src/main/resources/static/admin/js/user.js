@@ -1,9 +1,9 @@
 async function loadAllUser() {
     $('#example').DataTable().destroy();
     var role = document.getElementById("role").value
-    var url = 'http://localhost:8080/api/admin/get-user-by-role';
+    var url = 'https://lmsdtm-production.up.railway.app/api/admin/get-user-by-role';
     if (role != "") {
-        url = 'http://localhost:8080/api/admin/get-user-by-role?role=' + role;
+        url = 'https://lmsdtm-production.up.railway.app/api/admin/get-user-by-role?role=' + role;
     }
     const response = await fetch(url, {
         method: 'GET',
@@ -40,7 +40,7 @@ async function loadAllUser() {
 async function loadAllUserNotInCourse() {
     $('#example').DataTable().destroy(); // Xóa DataTable cũ trước khi tạo mới
     var courseId = window.location.search.split('=')[1]; // Lấy course ID từ URL
-    var url = `http://localhost:8080/api/admin/user-not-in-course/${courseId}`;
+    var url = `https://lmsdtm-production.up.railway.app/api/admin/user-not-in-course/${courseId}`;
 
     const response = await fetch(url, {
         method: 'GET',
@@ -78,7 +78,7 @@ async function loadAllUserNotInCourse() {
 // Hàm để thêm user vào khóa học
 async function addUserToCourse(userId, courseId) {
     var courseId = window.location.search.split('=')[1];
-    var url = `http://localhost:8080/api/course/admin/${courseId}/add-user/${userId}`;
+    var url = `https://lmsdtm-production.up.railway.app/api/course/admin/${courseId}/add-user/${userId}`;
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -116,7 +116,7 @@ async function preViewImage() {
     const filePath = document.getElementById('chooseimg')
     const formData = new FormData()
     formData.append("file", filePath.files[0])
-    var urlUpload = 'http://localhost:8080/api/public/upload-file';
+    var urlUpload = 'https://lmsdtm-production.up.railway.app/api/public/upload-file';
     const res = await fetch(urlUpload, {method: 'POST', body: formData});
     if (res.status < 300) {
         var linkimage = await res.text();
@@ -126,7 +126,7 @@ async function preViewImage() {
 }
 
 async function lockOrUnlock(id, type) {
-    var url = 'http://localhost:8080/api/admin/lockOrUnlockUser?id=' + id;
+    var url = 'https://lmsdtm-production.up.railway.app/api/admin/lockOrUnlockUser?id=' + id;
     const response = await fetch(url, {
         method: 'POST',
         headers: new Headers({
@@ -161,7 +161,7 @@ async function lockOrUnlock(id, type) {
 }
 
 async function addtk() {
-    var url = 'http://localhost:8080/api/admin/addaccount'
+    var url = 'https://lmsdtm-production.up.railway.app/api/admin/addaccount'
     var email = document.getElementById("email").value
     var password = document.getElementById("pass").value
     var fullname = document.getElementById("fullname").value
@@ -211,7 +211,7 @@ async function addtk() {
 
 
 async function loadUserTeacher() {
-    var url = 'http://localhost:8080/api/admin/get-user-by-role?role=ROLE_TEACHER';
+    var url = 'https://lmsdtm-production.up.railway.app/api/admin/get-user-by-role?role=ROLE_TEACHER';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -265,7 +265,7 @@ async function changePassword() {
         "newPass": newpass
     };
 
-    const response = await fetch('http://localhost:8080/api/all/change-password', {
+    const response = await fetch('https://lmsdtm-production.up.railway.app/api/all/change-password', {
         method: 'POST',
         headers: new Headers({
             'Authorization': 'Bearer ' + token,

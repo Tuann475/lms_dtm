@@ -141,7 +141,7 @@ async function ensureWritingSingleTaskDisplay(resultId, summaryItem){
             return;
         }
         // Fetch writing answers; if exactly 1, show its manual score
-        const adminUrl = 'http://localhost:8080/api/result/admin/writing/by-result?resultId=' + resultId;
+        const adminUrl = 'https://lmsdtm-production.up.railway.app/api/result/admin/writing/by-result?resultId=' + resultId;
         const resp = await fetch(adminUrl, { headers: new Headers({'Authorization':'Bearer '+(localStorage.getItem('token')||sessionStorage.getItem('token'))})});
         if(!resp.ok){ return; }
         const list = await resp.json();
@@ -178,8 +178,8 @@ async function loadResult() {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Đang tải...</td></tr>';
     }
     var exam = new URL(document.URL).searchParams.get('exam');
-    var adminUrl = 'http://localhost:8080/api/result/admin/find-by-exam?examId=' + exam;
-    var teacherUrl = 'http://localhost:8080/api/result/teacher/find-by-exam?examId=' + exam;
+    var adminUrl = 'https://lmsdtm-production.up.railway.app/api/result/admin/find-by-exam?examId=' + exam;
+    var teacherUrl = 'https://lmsdtm-production.up.railway.app/api/result/teacher/find-by-exam?examId=' + exam;
     var wrapper = await fetchWithTeacherFallback(adminUrl, teacherUrl, { method: 'GET', headers: new Headers({ 'Authorization': 'Bearer ' + token }) });
     if (wrapper.error) {
         if (tbody) {
@@ -229,7 +229,7 @@ function openWriting(resultId) {
 }
 
 async function loadWritingAnswers(resultId) {
-    const url = 'http://localhost:8080/api/result/admin/writing/by-result?resultId=' + resultId;
+    const url = 'https://lmsdtm-production.up.railway.app/api/result/admin/writing/by-result?resultId=' + resultId;
     const response = await fetch(url, { headers: new Headers({'Authorization': 'Bearer ' + token})});
     var list = await response.json();
     window.currentWritingAnswers = list || [];
@@ -312,7 +312,7 @@ async function gradeWriting(id) {
     // Chuẩn hóa chuỗi gửi lên server: tối đa 1 chữ số thập phân, bỏ .0 nếu có
     var scoreOut = recovered.toFixed(1).replace(/\.0$/, '');
 
-    const url = 'http://localhost:8080/api/result/admin/writing/grade?id=' + id + '&score=' + encodeURIComponent(scoreOut) + '&feedback=' + encodeURIComponent(fb);
+    const url = 'https://lmsdtm-production.up.railway.app/api/result/admin/writing/grade?id=' + id + '&score=' + encodeURIComponent(scoreOut) + '&feedback=' + encodeURIComponent(fb);
     const response = await fetch(url, { method: 'POST', headers: new Headers({'Authorization': 'Bearer ' + token})});
     if (response.status < 300) {
         toastr.success('Đã chấm');
@@ -339,8 +339,8 @@ function openSpeaking(resultId) {
 }
 
 async function loadSpeakingAnswers(resultId) {
-    const adminUrl   = 'http://localhost:8080/api/result/admin/speaking/by-result?resultId=' + resultId;
-    const teacherUrl = 'http://localhost:8080/api/result/teacher/speaking/by-result?resultId=' + resultId;
+    const adminUrl   = 'https://lmsdtm-production.up.railway.app/api/result/admin/speaking/by-result?resultId=' + resultId;
+    const teacherUrl = 'https://lmsdtm-production.up.railway.app/api/result/teacher/speaking/by-result?resultId=' + resultId;
     const w = await fetchWithTeacherFallback(adminUrl, teacherUrl, { headers: new Headers({'Authorization': 'Bearer ' + token})});
     if(w.error){
         document.getElementById('speakingListPending').innerHTML = '<div class="alert alert-danger">Lỗi mạng</div>';
@@ -436,7 +436,7 @@ async function gradeSpeaking(id) {
     }
 
 
-    const url = 'http://localhost:8080/api/result/admin/speaking/grade?id=' + id + '&score=' + score + '&feedback=' + encodeURIComponent(fb);
+    const url = 'https://lmsdtm-production.up.railway.app/api/result/admin/speaking/grade?id=' + id + '&score=' + score + '&feedback=' + encodeURIComponent(fb);
     try {
         const response = await fetch(url, { method: 'POST', headers: new Headers({'Authorization': 'Bearer ' + token})});
         if (response.ok) {
@@ -498,8 +498,8 @@ function isCorrectMcq(item){
 }
 
 async function loadReadingAnswers(resultId) {
-    const adminUrl   = 'http://localhost:8080/api/result/admin/reading/by-result?resultId=' + resultId;
-    const teacherUrl = 'http://localhost:8080/api/result/teacher/reading/by-result?resultId=' + resultId;
+    const adminUrl   = 'https://lmsdtm-production.up.railway.app/api/result/admin/reading/by-result?resultId=' + resultId;
+    const teacherUrl = 'https://lmsdtm-production.up.railway.app/api/result/teacher/reading/by-result?resultId=' + resultId;
     const w = await fetchWithTeacherFallback(adminUrl, teacherUrl, { headers: new Headers({'Authorization': 'Bearer ' + token})});
     if(w.error){
         document.getElementById('readingListPending').innerHTML = '<div class="alert alert-danger">Lỗi mạng</div>';
@@ -574,7 +574,7 @@ async function gradeReading(id) {
     var fb = (document.getElementById('fb_rd_' + id)?.value || '').trim();
     if (!okEl) { toastr.error('Thiếu lựa chọn Đúng/Sai'); return; }
     var score = okEl.value === '1' ? 1 : 0; // map Đúng/Sai to 1/0
-    const url = 'http://localhost:8080/api/result/admin/reading/grade?id=' + id + '&score=' + score + '&feedback=' + encodeURIComponent(fb);
+    const url = 'https://lmsdtm-production.up.railway.app/api/result/admin/reading/grade?id=' + id + '&score=' + score + '&feedback=' + encodeURIComponent(fb);
     try {
         const response = await fetch(url, { method: 'POST', headers: new Headers({'Authorization': 'Bearer ' + token})});
         if (response.status < 300) {
@@ -598,8 +598,8 @@ function openListening(resultId) {
 }
 
 async function loadListeningAnswers(resultId) {
-    const adminUrl   = 'http://localhost:8080/api/result/admin/listening/by-result?resultId=' + resultId;
-    const teacherUrl = 'http://localhost:8080/api/result/teacher/listening/by-result?resultId=' + resultId;
+    const adminUrl   = 'https://lmsdtm-production.up.railway.app/api/result/admin/listening/by-result?resultId=' + resultId;
+    const teacherUrl = 'https://lmsdtm-production.up.railway.app/api/result/teacher/listening/by-result?resultId=' + resultId;
     const w = await fetchWithTeacherFallback(adminUrl, teacherUrl, { headers: new Headers({'Authorization': 'Bearer ' + token})});
     if(w.error){
         document.getElementById('listeningListPending').innerHTML = '<div class="alert alert-danger">Lỗi mạng</div>';
@@ -679,7 +679,7 @@ async function gradeListening(id) {
     var fb = (document.getElementById('fb_ls_' + id)?.value || '').trim();
     if (!okEl) { toastr.error('Thiếu lựa chọn Đúng/Sai'); return; }
     var score = okEl.value === '1' ? 1 : 0;
-    const url = 'http://localhost:8080/api/result/admin/listening/grade?id=' + id + '&score=' + score + '&feedback=' + encodeURIComponent(fb);
+    const url = 'https://lmsdtm-production.up.railway.app/api/result/admin/listening/grade?id=' + id + '&score=' + score + '&feedback=' + encodeURIComponent(fb);
     try {
         const response = await fetch(url, { method: 'POST', headers: new Headers({'Authorization': 'Bearer ' + token})});
         if (response.status < 300) {
@@ -831,7 +831,7 @@ async function fetchGraderNameById(id){
     if(pendingGraderFetches.has(key)) return pendingGraderFetches.get(key);
     const fetchPromise = (async ()=>{
         try {
-            const res = await fetch(`http://localhost:8080/api/user/admin/find-by-id?id=${encodeURIComponent(id)}`, {
+            const res = await fetch(`https://lmsdtm-production.up.railway.app/api/user/admin/find-by-id?id=${encodeURIComponent(id)}`, {
                 headers: new Headers({ 'Authorization': 'Bearer ' + (localStorage.getItem('token')||sessionStorage.getItem('token')) })
             });
             if(!res.ok){ return null; }

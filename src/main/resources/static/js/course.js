@@ -1,7 +1,7 @@
 var size = 9;
 
 async function loadKhoaHoc(page) {
-    var url = 'http://localhost:8080/api/course/public/courses?type=' + '&page=' + page + '&size=' + size + '&sort=id,desc';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/courses?type=' + '&page=' + page + '&size=' + size + '&sort=id,desc';
     const response = await fetch(url, {});
     var result = await response.json();
     console.log(result);
@@ -37,7 +37,7 @@ async function loadKhoaHoc(page) {
 async function loadACourse() {
     var id = window.location.search.split('=')[1];
     if (id != null) {
-        var url = 'http://localhost:8080/api/course/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/course/public/findById?id=' + id;
         var response = await fetch(url, {});
         var result = await response.json();
         console.log(result);
@@ -89,7 +89,7 @@ async function loadACourse() {
 async function loadACourseCheckout() {
     var id = window.location.search.split('=')[1];
     if (id != null) {
-        var url = 'http://localhost:8080/api/course/public/findById?id=' + id;
+        var url = 'https://lmsdtm-production.up.railway.app/api/course/public/findById?id=' + id;
         try {
             var response = await fetch(url);
 
@@ -121,7 +121,7 @@ async function loadACourseCheckout() {
 
 // Sửa loadKhoaHocCuaToi để lưu list vào localStorage cho truy xuất nhanh
 async function loadKhoaHocCuaToi() {
-    var url = 'http://localhost:8080/api/course-user/user/find-by-user';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course-user/user/find-by-user';
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -184,7 +184,7 @@ async function loadKhoaHocCuaToi() {
 async function loadThongTinHocVienChungChi() {
     var uls = new URL(document.URL)
     var course = uls.searchParams.get("khoahoc");
-    var url = 'http://localhost:8080/api/exam/user/thong-tin-hoc-vien?course=' + course;
+    var url = 'https://lmsdtm-production.up.railway.app/api/exam/user/thong-tin-hoc-vien?course=' + course;
     const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
@@ -204,7 +204,7 @@ async function searchKhoaHoc(page, search) {
     var danhmuc = uls.searchParams.get("danhmuc");
     var tendanhmuc = uls.searchParams.get("tendanhmuc") || '';
     var catId = danhmuc != null ? Number(danhmuc) : null;
-    var url = 'http://localhost:8080/api/course/public/search-course?page=' + page + '&size=' + size + '&sort=id,desc';
+    var url = 'https://lmsdtm-production.up.railway.app/api/course/public/search-course?page=' + page + '&size=' + size + '&sort=id,desc';
     if (catId != null && !Number.isNaN(catId)) {
         url += '&categoryId=' + catId;
     }
@@ -348,7 +348,7 @@ async function saveCourse() {
         if (file) {
             const fd = new FormData();
             fd.append('file', file);
-            const uploadRes = await fetch('http://localhost:8080/api/public/upload-file', {
+            const uploadRes = await fetch('https://lmsdtm-production.up.railway.app/api/public/upload-file', {
                 method: 'POST',
                 body: fd
             });
@@ -378,7 +378,7 @@ async function saveCourse() {
             promises: [] // giữ rỗng ở đây, cam kết được thêm qua luồng riêng
         };
 
-        const res = await fetch('http://localhost:8080/api/course/admin/create-update', {
+        const res = await fetch('https://lmsdtm-production.up.railway.app/api/course/admin/create-update', {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token,
