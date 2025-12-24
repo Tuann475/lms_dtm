@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <title>Kết quả bài thi & Ôn luyện</title>
+    <!-- Add teacher stylesheet for navbar/header colors/layout -->
+    <link rel="stylesheet" href="/teacher/css/style.css">
+    <!-- ...existing code font-awesome, bootstrap, libs... -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <!-- Remove duplicate older jQuery to prevent conflicts -->
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.js"></script> -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylessheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <style>
+
+    </style>
+    <!-- Teacher layout script to inject nav/header -->
+    <script src="/teacher/js/main.js"></script>
+    <!-- Use teacher-specific results loader -->
+    <script src="/teacher/js/result.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        function sanitizeAdmin(s){ return (s||'').replace(/</g,'&lt;'); }
+        function isFillAdmin(item){
+            const qt = item?.questionType ?? item?.question?.type ?? item?.question?.questionType;
+            return qt && (qt.toUpperCase()==='FILL' || qt.toUpperCase()==='INPUT' || qt.toUpperCase()==='SHORT_ANSWER');
+        }
+        function getAdminAnswerText(item){
+            // Prefer explicit text input
+            if(item && item.answerText!=null){ return item.answerText; }
+            // MCQ selected option text/title
+            if(item && item.answer){
+                const opt = item.answer.content ?? item.answer.title ?? item.answerText;
+                if(opt!=null){ return opt; }
+            }
+            // Fallback
+            return item?.userAnswer ?? null;
+        }
+        function renderAdminAnswer(item){
+            const a = getAdminAnswerText(item);
+            if(a==null || (''+a).trim().length===0){
+                return '<span class="badge bg-warning text-dark">Chưa trả lời</span>';
+            }
+            return sanitizeAdmin(a);
+        }
+        function getQuestionContent(item){
+            return item?.questionContent ?? item?.question?.content ?? item?.questionText ?? null;
+        }
+        function getOptionsHtml(item){
+            const opts = item?.options ?? item?.answers ?? item?.question?.answers;
+            if(!Array.isArray(opts) || opts.length===0) return '';
+            let html = '<ul class="small mb-2 ps-3">';
+            opts.forEach(o=>{
+                const txt = sanitizeAdmin(o?.content ?? o?.title ?? '');
+                const isCorrect = o?.isTrue === true;
+                html += `<li>${txt}${isCorrect? ' <span class="badge bg-success">Đúng</span>':''}</li>`;
+            });
+            html += '</ul>';
+            return html;
+        }
+        function openSkillModal(resultId, skill) {
+            const upper = (skill || '').toUpperCase();
+            if (upper === 'READING') {
+                try {
+                    const modalEl = document.getElementById('readingModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    const elA = document.getElementById('readingList');
+                    const elP = document.getElementById('readingListPending');
+                    const elG = document.getElementById('readingListGraded');
+                    if (elA) elA.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elP) elP.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elG) elG.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (typeof loadReadingAnswers === 'function') {
+                        loadReadingAnswers(resultId);
+                        return;
+                    }
+                } catch (_) {}
+            }
+            if (upper === 'LISTENING') {
+                try {
+                    const modalEl = document.getElementById('listeningModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    const elA = document.getElementById('listeningListAll');
+                    const elP = document.getElementById('listeningListPending');
+                    const elG = document.getElementById('listeningListGraded');
+                    if (elA) elA.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elP) elP.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elG) elG.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (typeof loadListeningAnswers === 'function') {
+                        loadListeningAnswers(resultId);
+                        return;
+                    }
+                } catch (_) {}
+            }
+            if (upper === 'SPEAKING') {
+                try {
+                    const modalEl = document.getElementById('speakingModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    const elA = document.getElementById('speakingListAll');
+                    const elP = document.getElementById('speakingListPending');
+                    const elG = document.getElementById('speakingListGraded');
+                    if (elA) elA.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elP) elP.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elG) elG.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (typeof loadSpeakingAnswers === 'function') {
+                        loadSpeakingAnswers(resultId);
+                        return;
+                    }
+                } catch (_) {}
+            }
+            if (upper === 'WRITING') {
+                try {
+                    const modalEl = document.getElementById('writingModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    const elA = document.getElementById('writingListAll');
+                    const elP = document.getElementById('writingListPending');
+                    const elG = document.getElementById('writingListGraded');
+                    if (elA) elA.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elP) elP.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (elG) elG.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                    if (typeof loadWritingAnswers === 'function') {
+                        loadWritingAnswers(resultId);
+                        return;
+                    }
+                } catch (_) {}
+            }
+
+            // Default: keep current pending loader for other skills (e.g., WRITING)
+            const modalId = (skill || '').toLowerCase() + "Modal";
+            const listId = (skill || '').toLowerCase() + "List";
+            const modalNode = document.getElementById(modalId);
+            const listNode = document.getElementById(listId);
+            if (!modalNode || !listNode) {
+                console.warn('openSkillModal: missing modal or list node for skill', skill, { modalId, listId });
+                toastr && toastr.error('Không tìm thấy khu vực hiển thị bài để chấm cho kỹ năng ' + (skill || ''));
+                return;
+            }
+            const modalEl = new bootstrap.Modal(modalNode);
+            listNode.innerHTML = '<p class="text-muted">Đang tải...</p>';
+
+            const adminUrl = '/api/result/admin/skill-pending?resultId=' + resultId + '&skill=' + skill;
+            const teacherUrl = '/api/result/teacher/skill-pending?resultId=' + resultId + '&skill=' + skill;
+            const headers = authHeaders();
+            const useFallback = typeof fetchWithTeacherFallback === 'function';
+            const loader = useFallback
+                ? fetchWithTeacherFallback(adminUrl, teacherUrl, { headers })
+                : fetch(adminUrl, { headers }).then(r => ({ response: r, from: 'admin' }));
+
+            Promise.resolve(loader).then(w => {
+                if(w.error){
+                    listNode.innerHTML = '<p class="text-danger">Lỗi tải dữ liệu</p>';
+                    return;
+                }
+                const r = w.response;
+                if(!r.ok){
+                    listNode.innerHTML = '<p class="text-danger">Không tải được dữ liệu ('+r.status+')</p>';
+                    return;
+                }
+                return r.json();
+            }).then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    listNode.innerHTML = '<p class="text-muted">Không có bài cần chấm.</p>';
+                    return;
+                }
+                let html = '';
+                data.forEach(item => {
+                    const isFill = isFillAdmin(item);
+                    const typeBadge = isFill ? " <span class='badge bg-info text-dark'>Nhập vào ô trống</span>" : '';
+                    const qContent = getQuestionContent(item);
+                    const optsHtml = isFill ? '' : getOptionsHtml(item);
+                    let media = '';
+                    if (skill === 'LISTENING') {
+                        const audio = item?.questionLinkAudio || item?.linkAudio || item?.question?.linkAudio || '';
+                        media = audio ? `<div class='mb-2'><small class='text-muted d-block'>Audio đề:</small><audio controls style='width:100%'><source src='${audio}' type='audio/mpeg'>Trình duyệt không hỗ trợ.</audio></div>` : `<div class='small fst-italic'>Không có media</div>`;
+                    } else if (skill === 'READING') {
+                        media = `<div class='small fst-italic'>Không có media</div>`;
+                    }
+                    html += `<div class='border rounded p-2 mb-2'>
+                        <div class='small text-secondary'>Câu hỏi #${item.questionId || ''}</div>
+                        <p class='mb-1'>${sanitizeAdmin(item.questionTitle || '')}${typeBadge}</p>
+                        ${qContent? `<div class='noidunglesson'>${sanitizeAdmin(qContent)}</div>`:''}
+                        ${optsHtml}
+                        ${media}
+                        <div class='mt-2'><strong>Đáp án đã làm:</strong> ${renderAdminAnswer(item)}</div>
+                        <div class='mt-2'><strong>Điểm hiện tại:</strong> ${item.score ?? item.manualScore ?? '-'}<br><strong>Nhận xét hiện tại:</strong> ${(item.feedback || '')}</div>
+                        <div class='mt-2 d-flex gap-2 align-items-center'>
+                            <input type='number' min='0' max='9' step='1' class='form-control form-control-sm w-auto' id='score_${skill}_${item.id}' placeholder='Điểm'>
+                            <textarea class='form-control form-control-sm' id='fb_${skill}_${item.id}' placeholder='Nhận xét' rows='2'></textarea>
+                            ${isFill ? `<input type='text' class='form-control form-control-sm' id='ans_${skill}_${item.id}' placeholder='Đáp án nhập vào ô trống' value='${item.userAnswer ?? ''}'>` : ''}
+                            <button class='btn btn-sm btn-primary' onclick='gradeSkill("${skill}", ${item.id}, ${isFill ? 'true' : 'false'})'>Lưu</button>
+                            <button class='btn btn-sm btn-outline-secondary' onclick='openHistory("${skill}", ${item.id})'>Lịch sử</button>
+                        </div>
+                    </div>`;
+                });
+                listNode.innerHTML = html;
+            }).catch(_ => {
+                listNode.innerHTML = '<p class="text-danger">Lỗi tải dữ liệu</p>';
+            });
+
+            modalEl.show();
+        }
+
+        function gradeSkill(skill, id, isFill) {
+            const scoreEl = document.getElementById('score_' + skill + '_' + id);
+            const fbEl = document.getElementById('fb_' + skill + '_' + id);
+            const score = scoreEl && scoreEl.value ? scoreEl.value : '';
+            const fb = fbEl && fbEl.value ? fbEl.value.trim() : '';
+            let ans = '';
+            if (isFill) {
+                const ansEl = document.getElementById('ans_' + skill + '_' + id);
+                ans = ansEl && ansEl.value ? ansEl.value.trim() : '';
+            }
+            if (score === '') {
+                toastr.warning('Nhập điểm');
+                return;
+            }
+            let adminUrl = '/api/result/admin/skill/grade?id=' + id + '&score=' + score + '&skill=' + skill + '&feedback=' + encodeURIComponent(fb);
+            let teacherUrl = '/api/result/teacher/skill/grade?id=' + id + '&score=' + score + '&skill=' + skill + '&feedback=' + encodeURIComponent(fb);
+            if (isFill) { adminUrl += '&userAnswer=' + encodeURIComponent(ans); teacherUrl += '&userAnswer=' + encodeURIComponent(ans); }
+            const headers = authHeaders();
+            const useFallback = typeof fetchWithTeacherFallback === 'function';
+            const saver = useFallback
+                ? fetchWithTeacherFallback(adminUrl, teacherUrl, { method: 'POST', headers })
+                : fetch(adminUrl, { method: 'POST', headers }).then(r => ({ response: r, from: 'admin' }));
+            Promise.resolve(saver).then(w => {
+                const r = w.response;
+                if (r && r.ok) {
+                    toastr.success('Đã lưu');
+                    scoreEl.value = ''; fbEl.value = '';
+                    if (isFill) { const ansEl = document.getElementById('ans_' + skill + '_' + id); if (ansEl) ansEl.value = ''; }
+                    // Always refresh modal content after grading
+                    if (typeof openSkillModal === 'function' && window.currentResultId) {
+                        openSkillModal(window.currentResultId, skill);
+                    }
+                } else {
+                    toastr.error('Lưu thất bại');
+                }
+            }).catch(_ => toastr.error('Lưu thất bại'));
+        }
+
+        function authHeaders() {
+            const t = localStorage.getItem('token') || sessionStorage.getItem('token');
+            return {'Authorization': 'Bearer ' + t};
+        }
+
+        // HISTORY: fetch and show exam grade history for a skill/resultExam id
+    </script>
+
+</head>
+
+<body class="sb-nav-fixed">
+<!-- Insert teacher nav + header containers -->
+<div id="navleft" class="navleft"></div>
+<div class="contentweb">
+  <div id="headerweb" class="headerweb"></div>
+  <!-- Wrap existing content inside contentweb and apply spacing via contentmain -->
+  <main class="contentmain">
+    <!-- ...existing page content moved inside... -->
+    <div class="col-sm-12 header-sp"></div>
+    <div class="col-sm-12">
+      <div class="wrapper">
+        <button id="exportExcel" class="btn btn-success">Xuất Excel</button>
+        <table id="example" class="table table-striped tablefix">
+          <thead class="thead-tablefix">
+          <tr>
+            <th>Học viên</th>
+            <th>Tổng câu</th>
+            <th>Sai</th>
+            <th>Đúng</th>
+            <th>Kết quả đạt</th>
+            <th>Chấm</th>
+          </tr>
+          </thead>
+          <tbody id="listresult">
+          <!-- Rows appended by result.js with multiple skill buttons -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<!-- ...existing modals remain unchanged... -->
+<div class="modal fade" id="writingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chấm bài Writing</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#writingAll" role="tab">Tất cả</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#writingPending" role="tab">Chờ chấm</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#writingGraded" role="tab">Đã chấm</a></li>
+        </ul>
+        <div class="tab-content mt-2">
+          <div class="tab-pane fade show active" id="writingAll" role="tabpanel"><div id="writingListAll"></div></div>
+          <div class="tab-pane fade" id="writingPending" role="tabpanel"><div id="writingListPending"></div></div>
+          <div class="tab-pane fade" id="writingGraded" role="tabpanel"><div id="writingListGraded"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="listeningModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Chấm Listening</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#listeningAll" role="tab">Tất cả</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#listeningPending" role="tab">Chờ chấm</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#listeningGraded" role="tab">Đã chấm</a></li>
+        </ul>
+        <div class="tab-content mt-2">
+          <div class="tab-pane fade show active" id="listeningAll" role="tabpanel"><div id="listeningListAll"></div></div>
+          <div class="tab-pane fade" id="listeningPending" role="tabpanel"><div id="listeningListPending"></div></div>
+          <div class="tab-pane fade" id="listeningGraded" role="tabpanel"><div id="listeningListGraded"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="readingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chấm Reading</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#readingAll" role="tab">Tất cả</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#readingPending" role="tab">Chờ chấm</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#readingGraded" role="tab">Đã chấm</a></li>
+                </ul>
+                <div class="tab-content mt-2">
+                    <div class="tab-pane fade show active" id="readingAll" role="tabpanel">
+                        <!-- FIX: id phải trùng với JS teacher (readingList) -->
+                        <div id="readingList"></div>
+                    </div>
+                    <div class="tab-pane fade" id="readingPending" role="tabpanel"><div id="readingListPending"></div></div>
+                    <div class="tab-pane fade" id="readingGraded" role="tabpanel"><div id="readingListGraded"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="speakingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chấm Speaking</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#speakingAll" role="tab">Tất cả</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#speakingPending" role="tab">Chờ chấm</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#speakingGraded" role="tab">Đã chấm</a></li>
+        </ul>
+        <div class="tab-content mt-2">
+          <div class="tab-pane fade show active" id="speakingAll" role="tabpanel"><div id="speakingListAll"></div></div>
+          <div class="tab-pane fade" id="speakingPending" role="tabpanel"><div id="speakingListPending"></div></div>
+          <div class="tab-pane fade" id="speakingGraded" role="tabpanel"><div id="speakingListGraded"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Reusable History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyTitle">Lịch sử chấm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="historyBody">
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ...existing scripts (export excel, datatable init)... -->
+<script>
+    // Xuất dữ liệu sang Excel
+    document.getElementById("exportExcel").addEventListener("click", function () {
+        var table = document.getElementById("example");
+        var wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+        XLSX.writeFile(wb, "Kết quả thi.xlsx");
+    });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var token = localStorage.getItem('token');
+    if(!token){
+      var tbody = document.getElementById('listresult');
+      if(tbody){ tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Vui lòng đăng nhập lại (thiếu token).</td></tr>'; }
+      return;
+    }
+    var uls = new URL(document.URL);
+    var exam = uls.searchParams.get('exam');
+    if(!exam){
+      var tbody = document.getElementById('listresult');
+      if(tbody){ tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Vui lòng mở từ trang Bài thi (Kết quả) với tham số exam để tải dữ liệu.</td></tr>'; }
+      return;
+    }
+    if(typeof injectTeacherLayout==='function'){ injectTeacherLayout(); }
+    // Gọi loadResult() ở đây là đủ
+    if(typeof loadResult === 'function'){ loadResult(); }
+  });
+</script>
+<script>
+  // Delegate click events for dynamically generated grade buttons
+  document.addEventListener('click', function(evt){
+    let btn = evt.target.closest('[data-skill][data-result]');
+    let skill, resultId;
+    if(btn){
+      skill = (btn.getAttribute('data-skill')||'').toUpperCase();
+      resultId = btn.getAttribute('data-result');
+    } else {
+      // Fallback: class-based buttons
+      const rBtn = evt.target.closest('.btn-grade-reading');
+      const lBtn = evt.target.closest('.btn-grade-listening');
+      const sBtn = evt.target.closest('.btn-grade-speaking');
+      const wBtn = evt.target.closest('.btn-grade-writing');
+      btn = rBtn || lBtn || sBtn || wBtn;
+      if(btn){
+        skill = rBtn? 'READING' : lBtn? 'LISTENING' : sBtn? 'SPEAKING' : 'WRITING';
+        const row = btn.closest('tr');
+        resultId = (btn.getAttribute('data-result') || (row? row.getAttribute('data-result') : null));
+      }
+    }
+    if(!btn) return;
+    if(!skill || !resultId) { toastr && toastr.warning('Thiếu thông tin bài làm để mở'); return; }
+    if(['READING','LISTENING','SPEAKING','WRITING'].indexOf(skill)===-1) return;
+    try { openSkillModal(resultId, skill); } catch(e){ toastr && toastr.error('Không mở được modal: '+(e.message||'')); }
+  });
+</script>
+</body>
+</html>

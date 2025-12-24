@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/logo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+    <link href='https://fonts.googleapis.com/css?family=Quicksand' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+          integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/main.js"></script>
+    <script src="js/account.js"></script>
+    <script>
+        window.onload = function () {
+            loadMenu();
+        }
+    </script>
+    <style>
+        .lbform {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .inputlogin {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .inputlogin:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+
+        .success {
+            color: green;
+            font-size: 14px;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+
+
+        .divimglogin {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .divctlogin {
+            background-color: rgba(255, 255, 255, 0.8); /* Đảm bảo form không bị mờ khi đặt ảnh nền */
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .inputlogin {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .divctlogin {
+            margin: auto;
+
+            padding: 30px;
+            background-color: #fff; /* Màu nền trắng cho form */
+            border-radius: 8px; /* Bo góc mềm mại */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ phía dưới */
+            max-width: 800px; /* Giới hạn chiều rộng */
+            width: 100%; /* Đảm bảo kích thước toàn màn hình */
+            transition: box-shadow 0.3s ease; /* Thêm hiệu ứng chuyển động khi hover */
+        }
+
+        .divctlogin:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Đổ bóng đậm hơn khi hover */
+        }
+
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg headermain" id="menu">
+</nav>
+
+<div class="contentmain">
+    <div class="container">
+        <div class="dangnhapform">
+            <!--            <div class="divimglogin">-->
+            <!--                <img src="image/logo_dangky.webp" alt="" style="max-width: 100%; height: auto;">-->
+            <!--            </div>-->
+
+            <div class="divctlogin" style="margin-left: 20%">
+                <p class="labeldangnhap">Đăng Ký</p>
+                <form action="javascript:regis()" autocomplete="off">
+                    <!-- Các trường nhập liệu -->
+                    <label class="lbform">Họ tên</label>
+                    <input id="fullname" class="inputlogin">
+                    <div id="error-fullname" class="error"></div>
+
+                    <label class="lbform">Email</label>
+                    <input id="email" class="inputlogin" onchange="checkEmail()">
+                    <div id="error-email" class="error"></div>
+
+                    <label class="lbform">Số điện thoại</label>
+                    <input id="phone" class="inputlogin" onchange="checkPhone()">
+                    <div id="error-phone" class="error"></div>
+
+                    <label class="lbform">Mật khẩu</label>
+                    <input type="password" id="password" class="inputlogin">
+                    <div id="error-password" class="error"></div>
+
+                    <label class="lbform">Nhập lại mật khẩu</label>
+                    <input type="password" id="repassword" class="inputlogin">
+                    <div id="error-repassword" class="error"></div>
+
+                    <button class="btndangnhap">ĐĂNG KÝ</button>
+                    <button type="button" onclick="window.location.href='login'" class="btndangky">ĐĂNG NHẬP</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="footer"></div>
+</body>
+</html>

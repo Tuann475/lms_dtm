@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả ôn luyện</title>
+    <link rel="shortcut icon" href="image/logo.ico">
+    <!-- Đồng bộ core CSS libs với ketqua -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/practice_result.js"></script>
+    <style>
+        .question-card.correct{border-left:5px solid #198754;}
+        .question-card.incorrect{border-left:5px solid #dc3545;}
+        .answer-line{padding:2px 4px;border-radius:4px;}
+        .answer-line.correct{background:#e7f9ee;font-weight:600;}
+        .answer-line.selected-wrong{background:#fde8ec;}
+        .filter-active{font-weight:600;}
+        .stat-badge{margin-right:8px;}
+        .sticky-top-tools{position:sticky;top:60px;z-index:20;background:#fff;padding:10px 0;border-bottom:1px solid #eee;}
+        .toolbar-left{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+        .toolbar-right{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px;}
+        /* Đồng bộ style summary/band với ketqua.html */
+        .result-header h3 {font-weight:600;}
+        .summary-card, .band-card {box-shadow:0 2px 6px rgba(0,0,0,.08); border-radius:12px; margin-bottom:20px;}
+        .summary-card .card-header, .band-card .card-header {background:linear-gradient(135deg,#0d6efd,#3b8ef4); color:#fff; font-weight:500;}
+        .band-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px;}
+        .band-item {background:#f8f9fa; border:1px solid #e2e6ea; border-radius:8px; padding:10px; text-align:center; position:relative;}
+        .band-item.complete {border-color:#198754;}
+        .band-item .label {font-size:.75rem; text-transform:uppercase; letter-spacing:.5px; color:#6c757d;}
+        .band-item .value {font-size:1.4rem; font-weight:600;}
+        .band-item.pending .value {color:#fd7e14;}
+        .overall-sum .value {font-size:1.6rem;}
+        .status-pill {font-size:.8rem; padding:6px 10px; border-radius:50px; font-weight:500;}
+        .status-pending {background:#fff3cd; color:#856404; border:1px solid #ffe69c;}
+        .status-done {background:#d1e7dd; color:#0f5132; border:1px solid #badbcc;}
+        .progress-wrap {margin-top:10px;}
+        .placeholder-text {color:#6c757d; font-style:italic;}
+        #overallBandWrap {
+            background: linear-gradient(135deg, rgba(13,110,253,0.08), rgba(59,142,244,0.08));
+            border: 1px solid #3b8ef4;
+        }
+        #overallBandWrap .label { color:#0d6efd; display:flex; align-items:center; justify-content:center; gap:6px; }
+        #overallBandWrap .label .icon { color:#0d6efd; }
+        #overallBandWrap .value { font-size:1.6rem; color:#0d6efd; }
+        @media (max-width: 767px){ .band-grid {grid-template-columns:repeat(2,1fr);} }
+    </style>
+    <script>
+        window.onload = function () {
+            loadMenu();
+            loadPracticeResult();
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg headermain" id="menu"></nav>
+
+<div class="contentmain">
+  <div class="container">
+    <div class="result-header text-center mb-3">
+      <h3 id="practiceExamTitle">Kết quả ôn luyện</h3>
+      <p class="mb-1">Ngày thi: <span id="practiceDate"></span></p>
+      <p class="mb-1">Thời gian hoàn thành: <span id="practiceDuration"></span></p>
+      <p class="mb-0">Họ tên: <span id="practiceUserName"></span></p>
+    </div>
+
+    <div class="row g-4 mb-3">
+      <div class="col-12">
+        <div class="card band-card d-none" id="bandCard" aria-labelledby="bandTitle">
+          <div class="card-header d-flex justify-content-between align-items-center" id="bandTitle">
+            <span>Kết quả</span>
+            <button class="btn btn-outline-light btn-sm" id="btnViewPracticeAnswers" onclick="openViewPracticeAnswers()">
+              <i class="fas fa-eye"></i> Xem chi tiết bài làm
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="band-grid">
+              <div class="band-item pending" id="readingBandWrap"><div class="label">Reading</div><div class="value" id="readingBand">Chờ chấm</div></div>
+              <div class="band-item pending" id="listeningBandWrap"><div class="label">Listening</div><div class="value" id="listeningBand">Chờ chấm</div></div>
+              <div class="band-item pending" id="speakingBandWrap"><div class="label">Speaking</div><div class="value" id="speakingBand">Chờ chấm</div></div>
+              <div class="band-item pending" id="writingBandWrap"><div class="label">Writing</div><div class="value" id="writingBand">Chờ chấm</div></div>
+              <div class="band-item pending d-none" id="overallBandWrap"><div class="label"><span class="icon"><i class="fas fa-star"></i></span> Overall</div><div class="value" id="overallBand">Chờ chấm</div></div>
+            </div>
+            <div class="d-flex gap-2 mt-3 justify-content-end">
+              <a id="btnBackPracticeHub" href="luyende" class="btn btn-warning btn-sm">Quay lại luyện đề</a>
+              <a id="examPracticeHistoryLink" href="lichsuonluyen" class="btn btn-secondary btn-sm" title="Xem lịch sử ôn luyện theo bài thi">Lịch sử ôn luyện</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thanh công cụ lọc & điều hướng -->
+    <div class="sticky-top-tools mb-2">
+      <div class="d-flex w-100">
+        <div class="toolbar-left">
+          <!-- Đã xóa 3 nút lọc: Tất cả, Chỉ câu sai, Chưa trả lời -->
+        </div>
+        <div class="toolbar-right">
+          <!-- Đã di chuyển 2 nút sang band-card -->
+        </div>
+      </div>
+    </div>
+
+    <div id="sessionSummary" class="mt-2"></div>
+    <div id="extraStats" class="mb-3"></div>
+
+    <div id="questionResultList"></div>
+  </div>
+</div>
+
+<!-- Modal xem chi tiết bài làm -->
+<div class="modal fade" id="viewPracticeAnswersModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi tiết bài làm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" id="practiceAnswerTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-reading" data-bs-toggle="tab" data-bs-target="#pane-reading" type="button" role="tab">Reading</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-listening" data-bs-toggle="tab" data-bs-target="#pane-listening" type="button" role="tab">Listening</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-speaking" data-bs-toggle="tab" data-bs-target="#pane-speaking" type="button" role="tab">Speaking</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-writing" data-bs-toggle="tab" data-bs-target="#pane-writing" type="button" role="tab">Writing</button>
+          </li>
+        </ul>
+        <div class="tab-content mt-3" id="practiceAnswersModalBody">
+          <div class="tab-pane fade show active" id="pane-reading" role="tabpanel"></div>
+          <div class="tab-pane fade" id="pane-listening" role="tabpanel"></div>
+          <div class="tab-pane fade" id="pane-speaking" role="tabpanel"></div>
+          <div class="tab-pane fade" id="pane-writing" role="tabpanel"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="footer"></div>
+</body>
+</html>

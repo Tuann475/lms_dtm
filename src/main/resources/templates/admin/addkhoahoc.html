@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link href="css/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+
+
+    <script src="js/menu.js"></script>
+    <script src="js/user.js"></script>
+    <script src="js/course.js"></script>
+    <script src="js/category.js"></script>
+    <script>
+        window.onload = function () {
+            loadUserTeacher();
+            loadACourse();
+            loadCategoryKhoaHoc();
+        }
+    </script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Link SweetAlert -->
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+        .custom-text {
+            font-weight: bold;
+            color: #d9534f; /* Màu đỏ đậm */
+        }
+
+    </style>
+</head>
+
+<body class="sb-nav-fixed">
+<nav id="top" class="sb-topnav navbar navbar-expand navbar-dark bg-dark"></nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav"></div>
+    <div id="layoutSidenav_content">
+        <main class="main row">
+            <div class="col-sm-12">
+                <h4>Thông tin khóa học</h4>
+                <hr>
+            </div>
+            <div class="col-sm-3">
+                <label class="lbadd">Hình ảnh hiển thị <span style="color: red;">*</span></label>
+                <div class="divimgpreview">
+                    <img src="" class="imgpreview" id="imgpreview">
+                </div>
+                <button onclick="document.getElementById('anhdaidien').click()" class="btn btn-primary btnthemhinhanh">
+                    <i class="fa fa-image"></i> Chọn hình ảnh
+                </button>
+                <input type="file" style="visibility: hidden;" id="anhdaidien">
+                <div id="error-anhdaidien" class="error-message" style="color: red;"></div>
+                <label class="checkbox-custom">
+                    <span style="color: #118B50; font-weight: bold">Khóa học miễn phí</span>
+                    <input id="isFree" onchange="checkFree(this)" type="checkbox">
+                    <span class="checkmark-checkbox"></span>
+                </label>
+
+            </div>
+            <div class="col-sm-3">
+                <label class="lbadd">Tên khóa học <span style="color: red;">*</span></label>
+                <input id="tenkh" class="inputcontrol">
+                <div id="error-tenkh" class="error-message" style="color: red;"></div>
+                <label class="lbadd">Từ ngày <span style="color: red;">*</span></label>
+                <input id="tungay" type="date" class="inputcontrol">
+                <div id="error-tungay" class="error-message" style="color: red;"></div>
+                <label class="lbadd">Banner</label>
+                <input type="file" id="imagebanner" class="form-control">
+                <div id="error-imagebanner" class="error-message" style="color: red;"></div>
+            </div>
+            <div class="col-sm-3">
+                <label class="lbadd">Học phí <span style="color: red;">*</span></label>
+                <!--                    <input id="hocphi" class="inputcontrol" type="number" value="0">-->
+                <input type="text" class="inputcontrol" id="hocphi" placeholder="Nhập học phí"
+                       oninput="formatCurrency(this)" value="0">
+                <div id="error-hocphi" class="error-message" style="color: red;"></div>
+
+                <label class="lbadd">Đến ngày <span style="color: red;">*</span></label>
+                <input id="denngay" type="date" class="inputcontrol">
+                <div id="error-denngay" class="error-message" style="color: red;"></div>
+                <label class="lbadd">Chọn giảng viên <span style="color: red;">*</span></label>
+                <select id="giangvien" class="form-control">
+                    <option value="">giảng viên 1</option>
+                </select>
+                <div id="error-giangvien" class="error-message" style="color: red;"></div>
+            </div>
+            <div class="col-sm-3">
+                <label class="lbadd">Học phí giá cũ <span style="color: red;">*</span></label>
+                <!--                    <input id="hocphicu" class="inputcontrol" type="number" value="0">-->
+                <input type="text" id="hocphicu" placeholder="Nhập học phí cũ" oninput="formatCurrency(this)" value="0">
+                <label class="lbadd">Thứ trong tuần <span style="color: red;">*</span></label>
+                <select id="thutrongtuan" class="inputcontrol" multiple>
+                    <option value="2">Thứ 2</option>
+                    <option value="3">Thứ 3</option>
+                    <option value="4">Thứ 4</option>
+                    <option value="5">Thứ 5</option>
+                    <option value="6">Thứ 6</option>
+                    <option value="7">Thứ 7</option>
+                    <option value="8">Chủ nhật</option>
+                </select>
+                <div id="error-thutrongtuan" class="error-message" style="color: red;"></div>
+                <label class="lbadd">Giờ học <span style="color: red;">*</span></label>
+                <input id="giohoc" class="form-control">
+                <div id="error-giohoc" class="error-message" style="color: red;"></div>
+            </div>
+            <div class="col-sm-3"></div>
+            <div class="col-sm-3">
+                <label class="lbadd">Danh mục <span style="color: red;">*</span></label>
+                <select id="danhmuckhoahoc" class="form-control">
+                </select>
+                <div id="error-danhmuckhoahoc" class="error-message" style="color: red;"></div>
+            </div>
+            <div class="col-sm-12">
+                <h4 class="lbtieude">Cam kết đạt được sau khóa học</h4>
+                <hr>
+                <div id="listcamketdathem">
+                </div>
+                <div id="listcamket">
+                    <!-- <div class="singlebonho">
+                        Đạt mục tiêu tối thiểu 7.0 trong IELTS Reading General Training <i class="fa fa-trash iconxoabn"></i>
+                    </div> -->
+                </div>
+                <button data-bs-toggle="modal" data-bs-target="#themmausacmodal" class="btn btn-success btnthemhinhanh">
+                    <i class="fa fa-plus"></i> Thêm cam kết
+                </button>
+            </div>
+            <div class="col-sm-12">
+                <h4 class="lbtieude">Thông tin mô tả khóa học</h4>
+                <hr>
+                <textarea id="editor" name="content"></textarea>
+            </div>
+            <div class="col-sm-12">
+                <h4 class="lbtieude">Hướng dẫn cách học học</h4>
+                <hr>
+                <textarea id="editorch" name="content"></textarea>
+            </div>
+            <div class="col-sm-12">
+                <div class="loading" id="loading">
+                    <div class="bar1 bar"></div>
+                </div>
+                <br><br><br>
+                <button onclick="saveCourse()" class="btn btn-success form-control" id="btnthemkhoahoc"><i
+                        class="fa fa-plus"></i> Thêm khóa học
+                </button>
+            </div>
+        </main>
+
+    </div>
+</div>
+</body>
+
+
+<div class="modal fade" id="themmausacmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Thêm cam kết</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="lb-form">Nội dung cam kết</label>
+                <input id="camket" class="form-control">
+                <button onclick="addCamKet()" id="btnaddmausac" class="form-control btn btn-primary btnaddmodal">Thêm
+                    cam kết
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="capnhatmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cập nhật cam kết</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="lb-form">Nội dung cam kết</label>
+                <input id="idcamketupdate" type="hidden" class="form-control">
+                <input id="camketupdate" class="form-control">
+                <button onclick="updateCamKet()" id="btnaddmausac" class="form-control btn btn-primary btnaddmodal">Cập
+                    nhật cam kết
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Link Toastr CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<!-- Link Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.tiny.cloud/1/7br94foebz2vsbp8z12edwjxpzrnmunjnufe50p006hsvags/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    tinymce.init({
+        selector: 'textarea#editor',
+    });
+    tinymce.init({
+        selector: 'textarea#editorch',
+    });
+    anhdaidien.onchange = evt => {
+        const [file] = anhdaidien.files
+        if (file) {
+            imgpreview.src = URL.createObjectURL(file)
+        }
+    }
+    const ser = $("#thutrongtuan");
+    ser.select2({
+        placeholder: "Chọn thứ trong tuần",
+    });
+</script>
+</html>

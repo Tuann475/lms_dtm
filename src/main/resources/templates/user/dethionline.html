@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/logo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+    <link href='https://fonts.googleapis.com/css?family=Quicksand' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+          integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/main.js"></script>
+    <script src="js/account.js"></script>
+    <script src="js/course.js"></script>
+    <script src="js/exam.js"></script>
+    <script src="js/category.js"></script>
+    <script>
+        window.onload = function () {
+            loadMenu();
+            loadDanhMucThiOnline();
+            searchDeThi(0);
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg headermain" id="menu">
+</nav>
+
+<div class="contentmain" style="padding-top: 60px;">
+    <div class="noidungdethionline">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-9">
+                    <h3>Thư viện đề thi</h3>
+                    <ul class="nav nav-pills flex-wrap danhsachdmdethi" id="danhsachdmdethi">
+                        <li class="nav-item w-auto">
+                            <a class="nav-link active" href="/tests/">Tất cả</a>
+                        </li>
+                        <li class="nav-item w-auto">
+                            <a class="nav-link " href="/tests/ielts/">IELTS Academic</a>
+                        </li>
+                    </ul>
+                    <form class="divtimkiemdethi">
+                        <input onkeyup="loadBaiViet(0,'MOI')" class="inputsearchdethi" name="search"
+                               placeholder="Nhập từ khoá bạn muốn tìm kiếm: tên sách, dạng câu hỏi ...">
+                        <i class="fa fa-search"></i>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="row" id="listdethi">
+                    <!-- <div class="col-sm-3">
+                        <a href="" class="singdt"><div class="singdethi">
+                            <span class="tieudecourse">[IELTS Intensive Listening] Chiến lược làm bài - Chữa đề - Luyện nghe IELTS Listening theo phương pháp Dictation</span>
+                            <span class="testitem-info">
+                                <i class="fa fa-clock"></i> 40 phút
+                                | <i class="fa fa-user"></i> 249708
+                                | 4 phần thi
+                            </span>
+                            <span class="danhmucexam">
+                                <span>IELTS Academic</span>
+                                <span>Listening</span>
+                            </span>
+                            <span class="spchitiet"><button class="btnchitietexam">Chi tiết</button></span>
+                        </div></a>
+                    </div> -->
+                </div>
+                <div class="xemtatca">
+                    <button id="btnxemthemdethi" class="xemtatcabtn">Xem thêm <i class="fa fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <img src="image/Learning_English_with.webp" style="width: 100%;margin-top: 30px;">
+                <img src="image/download_extension.webp" style="width: 100%; margin-top: 20px;">
+                <div class="sesctiondethi" style="margin-top: 20px;">
+                    <img src="image/kn.png" style="width: 100%;">
+                    <a href=""
+                       style="text-decoration: none; display: block;font-weight: 600;text-align: center;color: #000;">Chia
+                        sẻ kinh nghiệm và tài liệu tự học IELTS 8.0+</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="footer"></div>
+</body>
+</html>

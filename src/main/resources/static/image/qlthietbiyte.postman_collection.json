@@ -1,0 +1,379 @@
+{
+  "info": {
+    "_postman_id": "176f15f4-e080-47de-8aa5-c1762a303895",
+    "name": "qlthietbiyte",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "18264176"
+  },
+  "item": [
+    {
+      "name": "đăng nhập",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\":\"admin@gmail.com\",\r\n    \"password\":\"12345\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/user/public/login",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "user",
+            "public",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "thêm danh mục",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzE1Mjc1MDgyLCJleHAiOjE3MTU4Nzk4ODIsInJvbGVzIjoiW1JPTEVfRU1QTE9ZRUUsUk9MRV9BRE1JTixdIn0.pg1RPZ-Qlt5gYlc_btsUQZssJfM317N5kWrqJ3k9T2cvdvVkmFFMbdW-aykU4eyp-PYxVfCW5mY1Wx-iLvHoSA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Loại D\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/category/admin/create",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "category",
+            "admin",
+            "create"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "update danh mục",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id\": 1,\r\n  \"name\": \"Loại A update\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/category/admin/update",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "category",
+            "admin",
+            "update"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "lấy tất cả danh mục",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/category/public/findAll",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "category",
+            "public",
+            "findAll"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "xóa danh mục",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/category/admin/delete?id=1",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "category",
+            "admin",
+            "delete"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "thêm khoa",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Khoa tiêu hóa\",\r\n  \"address\": \"tầng 2 nhà B\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/department/admin/create",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "department",
+            "admin",
+            "create"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "cập nhật khoa",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\":2,\r\n    \"name\": \"Khoa tiêu hóa update\",\r\n    \"address\": \"tầng 2 nhà B\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/department/admin/update",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "department",
+            "admin",
+            "update"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "lấy tất cả khoa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/department/public/findAll",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "department",
+            "public",
+            "findAll"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "xóa khoa",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/department/admin/delete?id=3",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "department",
+            "admin",
+            "delete"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "3"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "thêm tài khoản",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzE1Mjc2NDIwLCJleHAiOjE3MTU4ODEyMjAsInJvbGVzIjoiW1JPTEVfRU1QTE9ZRUUsUk9MRV9BRE1JTixdIn0.XX9UOmmVXMs5JdRKAp6BBoBSL41FTmz-OdjYZX8Xh01-by1C-AHMiZXgb7UXMdO3s6zmNgM6h710kHSLYTRuPA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"hoanghoai@gmail.com\",\r\n  \"password\": \"12345\",\r\n  \"avatar\": \"\",\r\n  \"fullName\": \"Hoàng Thị Hoài\",\r\n  \"departmentId\": 1,\r\n  \"phone\": \"093462783\",\r\n  \"address\": \"Hà nội\",\r\n  \"authorities\": [\r\n    {\r\n      \"name\": \"ROLE_USER\"\r\n    },\r\n    {\r\n      \"name\": \"ROLE_EMPLOYEE\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/user/admin/create-user",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "user",
+            "admin",
+            "create-user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "xóa user",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/user/admin/delete?id=2",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "user",
+            "admin",
+            "delete"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "cập nhật tài khoản",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzE1Mjc2NjYwLCJleHAiOjE3MTU4ODE0NjAsInJvbGVzIjoiW1JPTEVfRU1QTE9ZRUUsUk9MRV9BRE1JTixdIn0.AAVlCsLQL9LFNknRj9a7Zi4WAXp47ag92HVpNAW-8C61PC9IC9ykEaTs8pqFBWcRBnE0L36riUlprt2PmP-Img",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"hoanghoai@gmail.com\",\r\n  \"avatar\": \"\",\r\n  \"fullName\": \"Hoàng Thị Hoài update\",\r\n  \"departmentId\": 1,\r\n  \"phone\": \"093462783\",\r\n  \"address\": \"Hà nội\",\r\n  \"authorities\": [\r\n    {\r\n      \"name\": \"ROLE_USER\"\r\n    },\r\n    {\r\n      \"name\": \"ROLE_EMPLOYEE\"\r\n    },\r\n    {\r\n      \"name\": \"ROLE_ADMIN\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/user/admin/update-user?id=3",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "user",
+            "admin",
+            "update-user"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "3"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả thi</title>
+    <link rel="shortcut icon" href="image/logo.ico">
+    <!-- Core CSS libs -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <style>
+        /* --- Custom layout improvements --- */
+        .result-header h3 {font-weight:600;}
+        .summary-card, .band-card {box-shadow:0 2px 6px rgba(0,0,0,.08); border-radius:12px; margin-bottom:20px;}
+        .summary-card .card-header, .band-card .card-header {background:linear-gradient(135deg,#0d6efd,#3b8ef4); color:#fff; font-weight:500;}
+        .band-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px;}
+        .band-item {background:#f8f9fa; border:1px solid #e2e6ea; border-radius:8px; padding:10px; text-align:center; position:relative;}
+        .band-item.complete {border-color:#198754;}
+        .band-item .label {font-size:.75rem; text-transform:uppercase; letter-spacing:.5px; color:#6c757d;}
+        .band-item .value {font-size:1.4rem; font-weight:600;}
+        .band-item.pending .value {color:#fd7e14;}
+        .overall-sum .value {font-size:1.6rem;}
+        .status-pill {font-size:.8rem; padding:6px 10px; border-radius:50px; font-weight:500;}
+        .status-pending {background:#fff3cd; color:#856404; border:1px solid #ffe69c;}
+        .status-done {background:#d1e7dd; color:#0f5132; border:1px solid #badbcc;}
+        .progress-wrap {margin-top:10px;}
+        .placeholder-text {color:#6c757d; font-style:italic;}
+        /* Ô Overall đặc biệt hơn */
+        #overallBandWrap {
+            background: linear-gradient(135deg, rgba(13,110,253,0.08), rgba(59,142,244,0.08));
+            border: 1px solid #3b8ef4;
+        }
+        #overallBandWrap .label { color:#0d6efd; display:flex; align-items:center; justify-content:center; gap:6px; }
+        #overallBandWrap .label .icon { color:#0d6efd; }
+        #overallBandWrap .value { font-size:1.6rem; color:#0d6efd; }
+        @media (max-width: 767px){ .band-grid {grid-template-columns:repeat(2,1fr);} }
+    </style>
+    <!-- JS libs -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/lesson.js"></script>
+    <script>
+        window.onload = function(){
+            loadMenu();
+            const u = new URL(document.URL);
+            const exam = u.searchParams.get('exam');
+            // Set history link to per-exam practice history
+            try{
+              const link = document.getElementById('examPracticeHistoryLink');
+              if(link){
+                if(exam){ link.href = 'lichsuonluyen?exam='+encodeURIComponent(exam); link.classList.remove('disabled'); }
+                else { link.href = 'lichsuonluyen'; link.classList.add('disabled'); }
+              }
+            }catch(e){}
+            if(exam==null){ loadKetQua(); } else { loadKetQuaByExam(); }
+            initGradingStatusPolling();
+        }
+        // Chỉ còn chế độ làm lại tất cả (random), bỏ ôn luyện câu sai
+        function startOnLuyen() {
+            var token = localStorage.getItem("token");
+            var uls = new URL(document.URL);
+            var exam = uls.searchParams.get("exam");
+            var mode = 'ALL_RANDOM';
+            var modeText = 'làm lại tất cả';
+            $.ajax({
+                url: "/api/result/user/find-by-user-exam?examId=" + exam,
+                method: "GET",
+                headers: {'Authorization': 'Bearer ' + token},
+                success: function (res) {
+                    if (!res || !res.result) {
+                        toastr.error("Không tìm thấy kết quả");
+                        return;
+                    }
+                    var resultId = res.result.id;
+                    $.ajax({
+                        url: "/api/practice/user/start?resultId=" + resultId + "&mode=" + mode,
+                        method: "POST",
+                        headers: {'Authorization': 'Bearer ' + token},
+                        success: function (session) {
+                            if (session.totalQuestions === 0) {
+                                toastr.info("Không có câu hỏi để " + modeText);
+                                return;
+                            }
+                            window.location.href = "/onluyen?sessionId=" + session.id;
+                        },
+                        error: function () {
+                            toastr.error("Không thể tạo phiên " + modeText);
+                        }
+                    });
+                },
+                error: function () {
+                    toastr.error("Không lấy được kết quả");
+                }
+            });
+        }
+
+        function resolveBandValue(k, prop){
+            if(!k) return null;
+            if(k[prop]!=null) return k[prop];
+            if(k.result && k.result[prop]!=null) return k.result[prop];
+            return null;
+        }
+        function hasAnySkillBand(k){
+            const keys = ['readingBand','listeningBand','speakingBand','finalWritingBand','writingBand'];
+            return keys.some(function(key){ return resolveBandValue(k, key)!=null; });
+        }
+        function hasAllSkillBands(k){
+            const reading = resolveBandValue(k,'readingBand');
+            const listening = resolveBandValue(k,'listeningBand');
+            const speaking = resolveBandValue(k,'speakingBand');
+            const writing = resolveBandValue(k,'finalWritingBand') ?? resolveBandValue(k,'writingBand');
+            return reading!=null && reading !== 'chờ chấm' && listening!=null && listening !== 'chờ chấm' && speaking!=null && speaking !== 'chờ chấm' && writing!=null && writing !== 'chờ chấm';
+        }
+        function formatBandDisplay(value, options){
+            const opts = Object.assign({suffix:' / 9', decimals:1}, options);
+            if(value==null || value==='') return '-';
+            const num = parseFloat(value);
+            if(Number.isNaN(num)) return '-';
+            let text = Math.abs(num % 1) < 1e-6 ? num.toFixed(0) : num.toFixed(opts.decimals);
+            text = text.replace(/\.0$/,'');
+            return opts.suffix ? `${text}${opts.suffix}` : text;
+        }
+        function formatBandOrPending(value){
+            if(value==null || value==='' || value==='chờ chấm'){
+                return 'Chờ chấm';
+            }
+            return formatBandDisplay(value);
+        }
+        // --- Band summary renderer ---
+        async function applyBandSummary(k){
+            try {
+                const bandCard = document.getElementById('bandCard');
+                const placeholder = document.getElementById('bandPlaceholder');
+                if(!bandCard){ return; }
+                // Get skills from exam
+                var skills = new Set();
+                if(k.result && k.result.exam && k.result.exam.lessons){
+                    k.result.exam.lessons.forEach(function(l){ if(l.skill) skills.add(l.skill.toUpperCase()); });
+                }
+                var hasSkills = skills.size > 0;
+                if(!hasSkills){
+                    bandCard.classList.add('d-none');
+                    if(placeholder){ placeholder.style.display='none'; }
+                    return;
+                }
+                bandCard.classList.remove('d-none');
+                const allSkillsHaveBand = hasAllSkillBands(k);
+                const readingBand = resolveBandValue(k,'readingBand');
+                const listeningBand = resolveBandValue(k,'listeningBand');
+                const speakingBand = resolveBandValue(k,'speakingBand');
+                let writingBand = resolveBandValue(k,'finalWritingBand');
+                if(writingBand==null){ writingBand = resolveBandValue(k,'writingBand'); }
+                let overallBand = resolveBandValue(k,'overallBand');
+                const readingEl = document.getElementById('readingBand');
+                const listeningEl = document.getElementById('listeningBand');
+                const speakingEl = document.getElementById('speakingBand');
+                const writingEl = document.getElementById('writingBand');
+                const overallEl = document.getElementById('overallBand');
+                function show(v){return formatBandOrPending(v);}
+
+                // Set initial text
+                readingEl.innerText = show(readingBand);
+                listeningEl.innerText = show(listeningBand);
+                speakingEl.innerText = show(speakingBand);
+
+                // CRITICAL: Force pending check FIRST for Reading/Listening before computing fallback
+                const resultId = k?.result?.id ?? k?.id ?? null;
+                if(resultId){
+                    await forcePendingIfFillUngraded(resultId,'READING');
+                    await forcePendingIfFillUngraded(resultId,'LISTENING');
+                }
+
+                // THEN try fallback band computation only if still showing "Chờ chấm" after force check
+                if(resultId){
+                    const isPending = (v)=> (v==null || v==='chờ chấm' || v==='Chờ chấm');
+                    const currentReading = document.getElementById('readingBand')?.innerText || '';
+                    const currentListening = document.getElementById('listeningBand')?.innerText || '';
+
+                    if(isPending(readingBand) && currentReading === 'Chờ chấm'){
+                        await tryComputeObjectiveBandForSkill(resultId,'READING');
+                    }
+                    if(isPending(listeningBand) && currentListening === 'Chờ chấm'){
+                        await tryComputeObjectiveBandForSkill(resultId,'LISTENING');
+                    }
+                }
+
+                // Writing fallback logic
+                if(writingBand==null){
+                    try {
+                        const token = localStorage.getItem('token');
+                        const updateWritingAndMaybeOverall = (score)=>{
+                            if(score!=null){
+                                writingBand = parseFloat(score);
+                                writingEl.innerText = formatBandDisplay(writingBand);
+                                markBandState('writingBandWrap', writingBand, {hideWhenNull: false});
+                                computeOverallFallback();
+                            }
+                        };
+                        const fetchSingleWriting = async (rid)=>{
+                            try{
+                                const r = await fetch('/api/result/user/writing/by-result?resultId='+rid,{headers:{'Authorization':'Bearer '+token}});
+                                const list = r.ok ? await r.json() : [];
+                                if(Array.isArray(list)&&list.length===1){ const w=list[0]; const s = (w?.manualScore ?? w?.score ?? null); updateWritingAndMaybeOverall(s); }
+                            }catch(e){}
+                        };
+                        if(!resultId){
+                            const exam = new URL(document.URL).searchParams.get('exam');
+                            if(exam){
+                                fetch('/api/result/user/find-by-user-exam?examId='+exam,{headers:{'Authorization':'Bearer '+token}})
+                                  .then(r=>r.ok?r.json():null)
+                                  .then(res=>{ const rid = res?.result?.id ?? res?.id ?? null; if(rid){ fetchSingleWriting(rid); } });
+                            }
+                        } else { fetchSingleWriting(resultId); }
+                    } catch(e) { /* ignore */ }
+                } else {
+                    writingEl.innerText = show(writingBand);
+                }
+
+                // Mark band states with visual classes
+                markBandState('readingBandWrap', readingBand, skills.has('READING') ? {hideWhenNull: false} : {hideWhenNull: true});
+                markBandState('listeningBandWrap', listeningBand, skills.has('LISTENING') ? {hideWhenNull: false} : {hideWhenNull: true});
+                markBandState('speakingBandWrap', speakingBand, skills.has('SPEAKING') ? {hideWhenNull: false} : {hideWhenNull: true});
+                markBandState('writingBandWrap', writingBand, skills.has('WRITING') ? {hideWhenNull: false} : {hideWhenNull: true});
+
+                // Compute overall fallback
+                function computeOverallFallback(){
+                    try{
+                        const vals = [readingBand, listeningBand, speakingBand, writingBand]
+                            .map(v=> (v==null ? null : parseFloat(v)))
+                            .filter(v=> v!=null && !isNaN(v));
+                        const overallWrap = document.getElementById('overallBandWrap');
+                        if(vals.length===2 || vals.length===4){
+                            const avg = (vals.reduce((a,b)=>a+b,0) / vals.length);
+                            const rounded = Math.round(avg*2)/2;
+                            overallBand = rounded;
+                            if(overallEl){ overallEl.innerText = show(rounded); }
+                            if(overallWrap){ overallWrap.classList.remove('d-none'); overallWrap.classList.add('complete'); overallWrap.classList.remove('pending'); }
+                        } else {
+                            if(overallEl){ overallEl.innerText = ''; }
+                            if(overallWrap){ overallWrap.classList.add('d-none'); }
+                        }
+                    }catch(e){
+                        const overallWrap = document.getElementById('overallBandWrap');
+                        if(overallEl){ overallEl.innerText = ''; }
+                        if(overallWrap){ overallWrap.classList.add('d-none'); }
+                    }
+                }
+                computeOverallFallback();
+            }catch(e){console.warn('applyBandSummary error',e);}
+        }
+        function markBandState(wrapperId, val, options){
+            const opts = Object.assign({hideWhenNull:true}, options);
+            const w = document.getElementById(wrapperId);
+            if(!w) return;
+            w.classList.remove('pending','complete','d-none');
+            if(val === 'chờ chấm'){
+                w.classList.add('pending');
+                return;
+            }
+            const shouldHide = (val==null || (typeof val === 'string' && val.trim().length===0));
+            if(shouldHide){
+                if(opts.hideWhenNull){
+                    w.classList.add('d-none');
+                } else {
+                    w.classList.add('pending');
+                }
+                return;
+            }
+            w.classList.add('complete');
+        }
+        function showOverallStatus(k){
+            try{
+                const badge = document.getElementById('overallPendingBadge');
+                if(!badge) return;
+                const writingPending = k?.writingPending ?? k?.result?.writingPending ?? null;
+                const rb = k?.readingBand ?? k?.result?.readingBand ?? null;
+                const lb = k?.listeningBand ?? k?.result?.listeningBand ?? null;
+                const sb = k?.speakingBand ?? k?.result?.speakingBand ?? null;
+                const wb = k?.finalWritingBand ?? k?.result?.finalWritingBand ?? null;
+                const allBands = rb != null && rb !== 'chờ chấm' &&
+                                 lb != null && lb !== 'chờ chấm' &&
+                                 sb != null && sb !== 'chờ chấm' &&
+                                 wb != null && wb !== 'chờ chấm' &&
+                                 writingPending === 0;
+                if(allBands){
+                    badge.className='status-pill status-done';
+                    badge.innerText='Đã chấm xong';
+                } else {
+                    badge.className='status-pill status-pending';
+                    badge.innerText='Đang chờ chấm';
+                }
+            }catch(e){console.warn('showOverallStatus error',e);}
+        }
+        // Helper to normalize stored object
+        function getStoredResult(){
+            try{return JSON.parse(localStorage.getItem('ketqua'));}catch(e){return null;}
+        }
+        function applyCountsFromResult(k){
+            try{
+                if(!k) return;
+                const dto = (k.tongCauHoi!=null || k.soTLDung!=null || k.soTLSai!=null || k.soCauBo!=null) ? k : (k.result ? k.result : null);
+                if(!dto) return;
+                if(dto.soTLDung!=null){ var el=document.getElementById('sodung'); if(el) el.innerText = dto.soTLDung; }
+                if(dto.soTLSai!=null){ var es=document.getElementById('sosai'); if(es) es.innerText = dto.soTLSai; }
+                var tongCau = dto.tongCauHoi;
+                var diemBand = dto.diemThangMuoi;
+                var phanTram = dto.phanTram;
+                var elTong = document.getElementById('tongcau');
+                var elDiemBand = document.getElementById('diem10');
+                var elPhanTram = document.getElementById('diemphantram');
+                if(elTong && tongCau!=null){ elTong.innerText = tongCau; }
+                if(elDiemBand && diemBand!=null){ elDiemBand.innerText = formatBandOrPending(diemBand); }
+                if(elPhanTram && phanTram!=null){ elPhanTram.innerText = phanTram.toFixed ? phanTram.toFixed(1) + '%': phanTram + '%'; }
+            }catch(e){console.warn('applyCountsFromResult error',e);}
+        }
+        // Patch wrappers to include counts
+        const originalLoadKetQua = window.loadKetQua;
+        window.loadKetQua = function(){ originalLoadKetQua(); setTimeout(()=>{ const k=getStoredResult(); applyCountsFromResult(k); applyBandSummary(k); showOverallStatus(k); },200);}
+        const originalLoadKetQuaByExam = window.loadKetQuaByExam;
+        window.loadKetQuaByExam = function(){ originalLoadKetQuaByExam(); setTimeout(()=>{ const k=getStoredResult(); applyCountsFromResult(k); applyBandSummary(k); showOverallStatus(k); },200);}
+        // ============== New logic: Polling to auto-update grading status ==============
+        function isFullyGraded(k){
+            if(!k) return false;
+            const wp = k?.writingPending ?? k?.result?.writingPending ?? null;
+            const rb = k?.readingBand ?? k?.result?.readingBand ?? null;
+            const lb = k?.listeningBand ?? k?.result?.listeningBand ?? null;
+            const sb = k?.speakingBand ?? k?.result?.speakingBand ?? null;
+            const wb = k?.finalWritingBand ?? k?.result?.finalWritingBand ?? null;
+            return wp===0 && rb!=null && rb !== 'chờ chấm' && lb!=null && lb !== 'chờ chấm' && sb!=null && sb !== 'chờ chấm' && wb!=null && wb !== 'chờ chấm';
+        }
+        function refreshResultAndStatus(){
+            try {
+                const token = localStorage.getItem('token');
+                if(!token) return;
+                let exam = new URL(document.URL).searchParams.get('exam');
+                if(!exam){ const k = getStoredResult(); if(k?.examId) exam = k.examId; }
+                if(!exam) return;
+                fetch('/api/result/user/find-by-user-exam?examId='+exam,{headers:{'Authorization':'Bearer '+token}})
+                  .then(r=>{ if(r.status>=300) throw new Error('fail'); return r.json(); })
+                  .then(res=>{ if(res){ localStorage.setItem('ketqua', JSON.stringify(res)); applyCountsFromResult(res); applyBandSummary(res); showOverallStatus(res); if(isFullyGraded(res)&&window._gradingPoll){ clearInterval(window._gradingPoll); window._gradingPoll=null; } } })
+                  .catch(()=>{});
+            }catch(e){/* silent */}
+        }
+        function initGradingStatusPolling(){
+            // Gọi ngay một lần khi trang load để đồng bộ trạng thái mới nhất
+            refreshResultAndStatus();
+            // Nếu đã full graded thì không poll nữa
+            const k = getStoredResult();
+            if(isFullyGraded(k)) return;
+            // Thiết lập poll mỗi 15s
+            if(!window._gradingPoll){
+                window._gradingPoll = setInterval(refreshResultAndStatus, 15000);
+            }
+        }
+        // Improve answer placeholder for empty strings
+        function renderAnswerText(val){
+            if(val==null) return '<span class="badge bg-warning text-dark">Chưa trả lời</span>';
+            const s = (''+val).trim();
+            if(s.length===0) return '<span class="badge bg-warning text-dark">Chưa trả lời</span>';
+            return sanitize(s);
+        }
+        function getAnswerDisplay(a){
+            // Prefer explicit fill-in text
+            if(a && a.answerText!=null){ return renderAnswerText(a.answerText); }
+            // MCQ selected option content/title
+            if(a && a.answer){
+                const opt = a.answer.content ?? a.answer.title ?? a.answerText;
+                if(opt!=null){ return renderAnswerText(opt); }
+            }
+            // Fallback to userAnswer field
+            return renderAnswerText(a?.userAnswer);
+        }
+        function isFillType(a){
+            const qt = a?.questionType ?? a?.question?.type ?? a?.question?.questionType;
+            return qt && (qt.toUpperCase()==='FILL' || qt.toUpperCase()==='INPUT');
+        }
+        function hasAnyAnswer(a){
+          try{
+            const t = (a?.answerText ?? '').trim();
+            const ua = (a?.userAnswer ?? '').trim();
+            const hasFill = t.length>0 || ua.length>0;
+            const hasChoice = !!(a && a.answer && (a.answer.content || a.answer.title));
+            return hasFill || hasChoice;
+          }catch(e){ return false; }
+        }
+        function formatScoreDisplay(item){
+          // Nếu đã có điểm (score hoặc manualScore) thì luôn hiển thị điểm số
+          if(item){
+            if(item.score != null){
+              return sanitize(String(item.score));
+            }
+            if(item.manualScore != null){
+              return sanitize(String(item.manualScore));
+            }
+          }
+          // Trường hợp không có điểm mới coi là đang chờ chấm
+          return '<span class="badge bg-warning text-dark">Chờ chấm</span>';
+        }
+        function formatFeedbackDisplay(item){
+          if(item && item.feedback){
+            return sanitize(item.feedback);
+          }
+          return '';
+        }
+        function formatObjectiveScoreDisplay(item){
+          // Ưu tiên trạng thái đã chấm từ backend
+          if(item && item.graded && item.score != null){
+            return item.score == 1 ? "Đúng" : "Sai";
+          }
+          // Nếu là câu trắc nghiệm (có answer hoặc selectedAnswerId) và đã có score
+          if(item && item.score != null && (item.answer || item.selectedAnswerId)){
+            return item.score == 1 ? "Đúng" : "Sai";
+          }
+          // Các trường hợp khác (FILL/tự luận chưa có điểm) mới hiển thị 'Chờ chấm'
+          return '<span class="badge bg-warning text-dark">Chờ chấm</span>';
+        }
+        // === NEW: compute fallback bands only when all answered FILLs are graded ===
+        function computeBandFromAnswers(list){
+            if(!Array.isArray(list)) return null;
+            // If any answered FILL is ungraded -> return null (keep pending)
+            for(const a of list){
+                const isFill = isFillType(a);
+                if(!isFill) continue;
+                const hasAnswer = hasAnyAnswer(a);
+                if(!hasAnswer) continue;
+                // If this FILL has answer but not graded -> pending
+                if(a.graded !== true){
+                    return null;
+                }
+            }
+
+            let total = 0, correct = 0;
+            for(const a of list){
+                if(!hasAnyAnswer(a)) continue;
+                const isFill = isFillType(a);
+                if(isFill){
+                    // count only graded FILLs with score
+                    if(a.graded === true && a.score != null){
+                        total++;
+                        if(Number(a.score)===1) correct++;
+                    }
+                } else {
+                    // objective (MCQ) with score
+                    if(a.score != null){
+                        total++;
+                        if(Number(a.score)===1) correct++;
+                    }
+                }
+            }
+            if(total===0) return null;
+            const band = Math.round((correct/total) * 9 * 10) / 10;
+            return band;
+        }
+        function recomputeOverallFromDom(){
+            try{
+                const ids = ['readingBand','listeningBand','speakingBand','writingBand'];
+                const vals = [];
+                for(const id of ids){
+                    const t = (document.getElementById(id)?.innerText || '').trim();
+                    const n = parseFloat(t);
+                    if(!isNaN(n)) vals.push(n);
+                }
+                const overallWrap = document.getElementById('overallBandWrap');
+                const overallEl = document.getElementById('overallBand');
+                if(vals.length===2 || vals.length===4){
+                    const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+                    const rounded = Math.round(avg*2)/2;
+                    if(overallEl){ overallEl.innerText = formatBandDisplay(rounded); }
+                    if(overallWrap){ overallWrap.classList.remove('d-none','pending'); overallWrap.classList.add('complete'); }
+                } else {
+                    if(overallEl){ overallEl.innerText = ''; }
+                    if(overallWrap){ overallWrap.classList.add('d-none'); }
+                }
+            }catch(e){}
+        }
+        async function tryComputeObjectiveBandForSkill(resultId, skill){
+            try{
+                const token = localStorage.getItem('token'); if(!token) return;
+                let url=null, elId=null, wrapId=null;
+                if(skill==='READING'){ url='/api/result/user/reading/by-result?resultId='+resultId; elId='readingBand'; wrapId='readingBandWrap'; }
+                if(skill==='LISTENING'){ url='/api/result/user/listening/by-result?resultId='+resultId; elId='listeningBand'; wrapId='listeningBandWrap'; }
+                if(!url) return;
+
+                // Nếu server đã trả 'chờ chấm' cho skill này thì coi như pending, không cố tính lại band từ MCQ
+                const currentText = (document.getElementById(elId)?.innerText || '').trim().toLowerCase();
+                if(currentText === 'chờ chấm'){
+                    // Tuy nhiên vẫn gọi forcePendingIfFillUngraded để chắc chắn trạng thái pending đúng theo dữ liệu chi tiết
+                    await forcePendingIfFillUngraded(resultId, skill);
+                    return;
+                }
+
+                const r = await fetch(url,{headers:{'Authorization':'Bearer '+token}});
+                if(!r.ok) return;
+                const list = await r.json();
+                const band = computeBandFromAnswers(Array.isArray(list)? list: []);
+                // If band is null (due to ungraded FILL or no graded items), keep "Chờ chấm"
+                if(band==null){
+                    const el = document.getElementById(elId);
+                    if(el){ el.innerText = 'Chờ chấm'; }
+                    markBandState(wrapId, 'chờ chấm', {hideWhenNull:false});
+                    recomputeOverallFromDom();
+                    return;
+                }
+                const el = document.getElementById(elId);
+                if(el){ el.innerText = formatBandDisplay(band); }
+                markBandState(wrapId, band, {hideWhenNull:false});
+                recomputeOverallFromDom();
+            }catch(e){}
+        }
+        // FIXED: Properly detect ungraded answered FILL and force pending
+        async function forcePendingIfFillUngraded(resultId, skill){
+            try{
+                const token = localStorage.getItem('token'); if(!token) return;
+                let url=null, elId=null, wrapId=null;
+                if(skill==='READING'){ url='/api/result/user/reading/by-result?resultId='+resultId; elId='readingBand'; wrapId='readingBandWrap'; }
+                if(skill==='LISTENING'){ url='/api/result/user/listening/by-result?resultId='+resultId; elId='listeningBand'; wrapId='listeningBandWrap'; }
+                if(!url) return;
+                const r = await fetch(url,{headers:{'Authorization':'Bearer '+token}});
+                if(!r.ok) return;
+                let list = await r.json();
+                list = Array.isArray(list)? list: [];
+
+                // Check if any answered FILL is not graded
+                const hasUngradedFill = list.some(a => {
+                    const isFill = isFillType(a);
+                    if(!isFill) return false;
+                    const hasAnswer = hasAnyAnswer(a);
+                    if(!hasAnswer) return false;
+                    // If graded flag is explicitly false or missing -> pending
+                    return (a.graded !== true);
+                });
+
+                if(hasUngradedFill){
+                    const el = document.getElementById(elId);
+                    const wrap = document.getElementById(wrapId);
+                    if(el){ el.innerText = 'Chờ chấm'; }
+                    if(wrap){
+                        wrap.classList.remove('complete','d-none');
+                        wrap.classList.add('pending');
+                    }
+                    recomputeOverallFromDom();
+                }
+            }catch(e){console.warn('forcePendingIfFillUngraded error', e);}
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg headermain" id="menu"></nav>
+<div class="contentmain">
+  <div class="container">
+    <div class="result-header text-center mb-4">
+      <h3 id="tenbaithi"></h3>
+      <p class="mb-1">Ngày thi: <span id="ngaythi"></span></p>
+      <p class="mb-1">Thời gian hoàn thành: <span id="timeht"></span> / <span id="tongphu"></span> phút</p>
+      <p class="mb-0">Họ tên: <span id="hotenthi"></span></p>
+    </div>
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <a id="examPracticeHistoryLink" class="btn btn-outline-secondary" href="#" title="Xem lịch sử ôn luyện của bài thi này">Lịch sử ôn luyện</a>
+        <!-- Existing action buttons may be here -->
+    </div>
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card band-card d-none" id="bandCard" aria-labelledby="bandTitle">
+          <div class="card-header d-flex justify-content-between align-items-center" id="bandTitle">
+            <span>Kết quả</span>
+            <button class="btn btn-outline-light btn-sm" id="btnViewAnswers" onclick="openViewAnswers()">
+              <i class="fas fa-eye"></i> Xem chi tiết bài làm
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="band-grid">
+              <div class="band-item pending" id="readingBandWrap"><div class="label">Reading</div><div class="value" id="readingBand">Chờ chấm</div></div>
+              <div class="band-item pending" id="listeningBandWrap"><div class="label">Listening</div><div class="value" id="listeningBand">Chờ chấm</div></div>
+              <div class="band-item pending" id="speakingBandWrap"><div class="label">Speaking</div><div class="value" id="speakingBand">Chờ chấm</div></div>
+              <div class="band-item pending" id="writingBandWrap"><div class="label">Writing</div><div class="value" id="writingBand">Chờ chấm</div></div>
+              <!-- Thêm ô Tổng (Overall) -->
+              <div class="band-item pending d-none" id="overallBandWrap"><div class="label"><span class="icon"><i class="fas fa-star"></i></span> Overall</div><div class="value" id="overallBand">Chờ chấm</div></div>
+            </div>
+            <div class="mt-2 text-muted small">Mỗi kỹ năng hiển thị theo thang điểm 0 - 9 (band IELTS).</div>
+            <div class="mt-3 d-flex flex-wrap align-items-center gap-2">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal xem lại đáp án đã làm -->
+<div class="modal fade" id="viewAnswersModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi tiết bài làm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" id="answersTabs" role="tablist">
+          <li class="nav-item" role="presentation"><button class="nav-link active" id="tab-reading" data-bs-toggle="tab" data-bs-target="#pane-reading" type="button" role="tab">Reading</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" id="tab-listening" data-bs-toggle="tab" data-bs-target="#pane-listening" type="button" role="tab">Listening</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" id="tab-speaking" data-bs-toggle="tab" data-bs-target="#pane-speaking" type="button" role="tab">Speaking</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" id="tab-writing" data-bs-toggle="tab" data-bs-target="#pane-writing" type="button" role="tab">Writing</button></li>
+        </ul>
+        <div class="tab-content mt-3">
+          <div class="tab-pane fade show active" id="pane-reading" role="tabpanel">
+            <div id="userReadingAnswers"><em>Chưa tải</em></div>
+          </div>
+          <div class="tab-pane fade" id="pane-listening" role="tabpanel">
+            <div id="userListeningAnswers"><em>Chưa tải</em></div>
+          </div>
+          <div class="tab-pane fade" id="pane-speaking" role="tabpanel">
+            <div id="userSpeakingAnswers"><em>Chưa tải</em></div>
+          </div>
+          <div class="tab-pane fade" id="pane-writing" role="tabpanel">
+            <div id="userWritingAnswers"><em>Chưa tải</em></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <!-- Đã xóa nút Làm mới theo yêu cầu -->
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openViewAnswers(){
+  try{
+    var token = localStorage.getItem('token');
+    var uls = new URL(document.URL);
+    var exam = uls.searchParams.get('exam');
+    if(!token){ toastr.error('Bạn cần đăng nhập'); return; }
+    function updateAnswerTabsTitle(examName, lessonNamesBySkill){
+      try{
+        var modalEl = document.getElementById('viewAnswersModal');
+        if(modalEl){
+          var titleEl = modalEl.querySelector('.modal-title');
+          if(titleEl){ titleEl.textContent = examName ? ('Chi tiết bài làm - ' + examName) : 'Chi tiết bài làm'; }
+          var tabSkillMap = {
+            'tab-reading':'READING',
+            'tab-listening':'LISTENING',
+            'tab-speaking':'SPEAKING',
+            'tab-writing':'WRITING'
+          };
+          var visibleTabIds = [];
+          Object.keys(tabSkillMap).forEach(function(tabId){
+            var btn = document.getElementById(tabId);
+            if(!btn) return;
+            var base = btn.getAttribute('data-base-label');
+            if(!base){ base = btn.textContent.trim(); btn.setAttribute('data-base-label', base); }
+            var skillKey = tabSkillMap[tabId];
+            var labels = lessonNamesBySkill && lessonNamesBySkill[skillKey] ? lessonNamesBySkill[skillKey] : [];
+            var display = labels.length > 0 ? labels.join(' | ') : base;
+            btn.textContent = display;
+            var li = btn.closest('.nav-item');
+            var pane = document.querySelector(btn.getAttribute('data-bs-target'));
+            var shouldShow = labels.length > 0;
+            if(shouldShow){
+              visibleTabIds.push(tabId);
+              if(li) li.style.display = '';
+              if(pane) pane.style.display = '';
+            } else {
+              if(li) li.style.display = 'none';
+              if(pane){ pane.style.display = 'none'; pane.classList.remove('show','active'); }
+              btn.classList.remove('active');
+            }
+          });
+          ensureFirstVisibleTabActive(visibleTabIds);
+        }
+      }catch(err){ console.warn('Không cập nhật được tiêu đề/tab', err); }
+    }
+    function collectLessonNamesBySkill(lessons){
+      var map = {};
+      if(!Array.isArray(lessons)) return map;
+      lessons.forEach(function(lesson){
+        if(!lesson || !lesson.skill) return;
+        var skillKey = String(lesson.skill).toUpperCase();
+        if(!map[skillKey]) map[skillKey] = [];
+        if(lesson.name){ map[skillKey].push(lesson.name); }
+      });
+      return map;
+    }
+    function showModalAndLoad(resultPayload){
+      var resultId = resultPayload?.result?.id ?? resultPayload?.id;
+      var examData = resultPayload?.result?.exam ?? resultPayload?.exam ?? null;
+      var examName = examData?.name ?? null;
+      var lessonNamesBySkill = collectLessonNamesBySkill(examData?.lessons);
+      updateAnswerTabsTitle(examName, lessonNamesBySkill);
+      var modalEl = document.getElementById('viewAnswersModal');
+      var bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+      var rid = resultId;
+      loadUserReadingAnswers(rid, token);
+      loadUserListeningAnswers(rid, token);
+      loadUserSpeakingAnswers(rid, token);
+      loadUserWritingAnswers(rid, token);
+    }
+    if(!exam){
+      var kq = null; try{ kq = JSON.parse(localStorage.getItem('ketqua')); }catch(e){}
+      if(kq){ showModalAndLoad(kq); return; }
+      toastr.error('Thiếu tham số exam'); return;
+    }
+    fetch('/api/result/user/find-by-user-exam?examId='+exam,{headers:{'Authorization':'Bearer '+token}})
+      .then(r=>{ if(r.status>=300) throw new Error('Không lấy được kết quả'); return r.json(); })
+      .then(res=>{
+        if(res){
+          try{ localStorage.setItem('ketqua', JSON.stringify(res)); }catch(e){}
+          showModalAndLoad(res);
+        } else {
+          toastr.error('Không tìm thấy kết quả');
+        }
+      })
+      .catch(e=>{ toastr.error(e.message||'Lỗi'); });
+  }catch(e){ toastr.error('Lỗi'); }
+}
+function sanitize(s){
+  var t = (s||'');
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function loadUserReadingAnswers(resultId, token){
+  document.getElementById('userReadingAnswers').innerHTML = '<em>Đang tải...</em>';
+  fetch('/api/result/user/reading/by-result?resultId='+resultId,{headers:{'Authorization':'Bearer '+token}})
+    .then(r=>r.json())
+    .then(list=>{
+      // Filter out questions without any submitted answer
+      list = Array.isArray(list) ? list.filter(hasAnyAnswer) : [];
+      if(!list || list.length===0){ document.getElementById('userReadingAnswers').innerHTML = '<div class="alert alert-info">Không có câu trả lời Reading.</div>'; return; }
+      var html='';
+      for(var i=0;i<list.length;i++){
+        var a=list[i];
+        var typeLabel = isFillType(a)? ' <span class="badge bg-info text-dark">Nhập vào ô trống</span>' : '';
+        var pendingBadge = (!a.graded && isFillType(a)) ? '<span class="badge bg-warning text-dark ms-2">Đang chờ chấm</span>' : '';
+        html += `<div class='card mb-2'><div class='card-body'>
+          <p><strong>Câu #${a.questionId||''}</strong> - ${sanitize(a.questionTitle)||''}${typeLabel} ${pendingBadge}</p>
+          <p><strong>Trả lời:</strong> ${getAnswerDisplay(a)}</p>
+          ${a.graded? `<p><strong>Kết quả:</strong> ${formatObjectiveScoreDisplay(a)}${a.feedback? ` | Nhận xét: ${sanitize(a.feedback)}`:''}</p>`:`<p><strong>Kết quả:</strong> ${formatObjectiveScoreDisplay(a)}</p>`}
+        </div></div>`;
+      }
+      document.getElementById('userReadingAnswers').innerHTML = html;
+    })
+    .catch(()=>{ document.getElementById('userReadingAnswers').innerHTML = '<span class="text-danger">Lỗi tải Reading</span>'; });
+}
+function loadUserListeningAnswers(resultId, token){
+  document.getElementById('userListeningAnswers').innerHTML = '<em>Đang tải...</em>';
+  fetch('/api/result/user/listening/by-result?resultId='+resultId,{headers:{'Authorization':'Bearer '+token}})
+    .then(r=>r.json())
+    .then(list=>{
+      // Filter out questions without any submitted answer
+      list = Array.isArray(list) ? list.filter(hasAnyAnswer) : [];
+      if(!list || list.length===0){ document.getElementById('userListeningAnswers').innerHTML = '<div class="alert alert-info">Không có câu trả lời Listening.</div>'; return; }
+      var html='';
+      for(var i=0;i<list.length;i++){
+        var a=list[i];
+        var typeLabel = isFillType(a)? ' <span class="badge bg-info text-dark">Nhập vào ô trống</span>' : '';
+        var pendingBadge = (!a.graded && isFillType(a)) ? '<span class="badge bg-warning text-dark ms-2">Đang chờ chấm</span>' : '';
+        html += `<div class='card mb-2'><div class='card-body'>
+          <p><strong>Câu #${a.questionId||''}</strong> - ${sanitize(a.questionTitle)||''}${typeLabel} ${pendingBadge}</p>
+          <p><strong>Trả lời:</strong> ${getAnswerDisplay(a)}</p>
+          ${a.graded? `<p><strong>Kết quả:</strong> ${formatObjectiveScoreDisplay(a)}${a.feedback? ` | Nhận xét: ${sanitize(a.feedback)}`:''}</p>`:`<p><strong>Kết quả:</strong> ${formatObjectiveScoreDisplay(a)}</p>`}
+        </div></div>`;
+      }
+      document.getElementById('userListeningAnswers').innerHTML = html;
+    })
+    .catch(()=>{ document.getElementById('userListeningAnswers').innerHTML = '<span class="text-danger">Lỗi tải Listening</span>'; });
+}
+function loadUserSpeakingAnswers(resultId, token){
+  document.getElementById('userSpeakingAnswers').innerHTML = '<em>Đang tải...</em>';
+  fetch('/api/result/user/speaking/by-result?resultId='+resultId,{headers:{'Authorization':'Bearer '+token}})
+    .then(r=>r.json())
+    .then(list=>{
+      if(!list || list.length===0){ document.getElementById('userSpeakingAnswers').innerHTML = '<div class="alert alert-info">Không có bài Speaking đã làm.</div>'; return; }
+      var html='';
+      for(var i=0;i<list.length;i++){
+        var a=list[i];
+        var pendingBadge = (!a.graded || a.score==null) ? '<span class="badge bg-warning text-dark ms-2">Đang chờ chấm</span>' : '';
+        html += `<div class='card mb-2'><div class='card-body'>
+          <p><strong>Câu #${a.questionId||''}</strong> - ${sanitize(a.questionTitle)||''} ${pendingBadge}</p>
+          ${a.cloudinaryUrl? `<audio controls style='width:100%;max-width:500px'><source src='${a.cloudinaryUrl}' type='audio/mpeg'>Trình duyệt không hỗ trợ</audio>`: '<p class="text-muted">Không có audio</p>'}
+          ${a.transcript? `<p class='small'><strong>Transcript:</strong> ${sanitize(a.transcript)}</p>`:''}
+          <p><strong>Kết quả:</strong> ${formatScoreDisplay(a)}${a.feedback? ` | Nhận xét: ${sanitize(a.feedback)}`:''}</p>
+        </div></div>`;
+      }
+      document.getElementById('userSpeakingAnswers').innerHTML = html;
+    })
+    .catch(()=>{ document.getElementById('userSpeakingAnswers').innerHTML = '<span class="text-danger">Lỗi tải Speaking</span>'; });
+}
+function loadUserWritingAnswers(resultId, token){
+  document.getElementById('userWritingAnswers').innerHTML = '<em>Đang tải...</em>';
+  fetch('/api/result/user/writing/by-result?resultId='+resultId,{headers:{'Authorization':'Bearer '+token}})
+    .then(r=>r.json())
+    .then(list=>{
+      if(!Array.isArray(list) || list.length===0){
+        document.getElementById('userWritingAnswers').innerHTML = '<div class="alert alert-info">Không có bài Writing đã nộp.</div>';
+        return;
+      }
+      var html='';
+      list.forEach(function(item,index){
+        // Bỏ badge Đã chấm / Chờ chấm, chỉ hiển thị tiêu đề, nội dung, điểm và nhận xét
+        var scoreHtml = formatScoreDisplay(item);
+        var feedbackHtml = formatFeedbackDisplay(item);
+        html += `<div class='card mb-2'><div class='card-body'>
+          <p class='mb-1'><strong>Bài ${index+1}</strong> - ${sanitize(item.questionTitle||'')}</p>
+          <div class='p-2 border rounded bg-light' style='white-space:pre-line'>${sanitize(item.answerText||'')}</div>
+          <p class='mt-2 mb-0'><strong>Kết quả:</strong> ${scoreHtml}${feedbackHtml? ` | <strong>Nhận xét:</strong> ${feedbackHtml}`: ''}</p>
+        </div></div>`;
+      });
+      document.getElementById('userWritingAnswers').innerHTML = html;
+    })
+    .catch(()=>{
+      document.getElementById('userWritingAnswers').innerHTML = '<span class="text-danger">Lỗi tải Writing</span>';
+    });
+}
+function refreshDetailedAnswers(){
+  try{
+    var token = localStorage.getItem('token');
+    var uls = new URL(document.URL);
+    var exam = uls.searchParams.get('exam');
+    if(!token){ toastr.error('Bạn cần đăng nhập'); return; }
+    var kq = null; try{ kq = JSON.parse(localStorage.getItem('ketqua')); }catch(e){}
+    if(!kq || !kq.result){ toastr.error('Không có dữ liệu kết quả'); return; }
+    var resultId = kq.result.id;
+    loadUserReadingAnswers(resultId, token);
+    loadUserListeningAnswers(resultId, token);
+    loadUserSpeakingAnswers(resultId, token);
+    loadUserWritingAnswers(resultId, token);
+    toastr.success('Đã làm mới dữ liệu');
+  }catch(e){ toastr.error('Lỗi làm mới'); }
+}
+</script>
+
+<div id="footer"></div>
+</body>
+</html>

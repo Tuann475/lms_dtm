@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Tạo bài thi</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body onload="initExamForm()">
+<div class="container">
+    <h2>Tạo bài thi</h2>
+    <div id="message" style="color:red"></div>
+    <form id="examForm" onsubmit="return submitExam(event)">
+        <label>Tên bài thi</label>
+        <input type="text" id="name" required />
+        <label>Thời gian (phút)</label>
+        <input type="number" id="limitTime" required />
+        <label>Ngày thi</label>
+        <input type="date" id="examDate" required />
+        <label>Giờ thi</label>
+        <input type="time" id="examTime" required />
+        <label>Khóa học</label>
+        <input type="number" id="courseId" required />
+        <button type="submit">Tạo</button>
+    </form>
+</div>
+<script src="/js/teacher_exam.js"></script>
+</body>
+</html>
+

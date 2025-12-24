@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <title>Kết quả ôn luyện</title>
+    <!-- Removed legacy css/styles.css to align with teacher layout -->
+    <!-- Thêm stylesheet teacher để đồng bộ header/navbar -->
+    <link rel="stylesheet" href="/teacher/css/style.css">
+    <!-- ...existing code font-awesome, bootstrap libs... -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <!-- Removed duplicate old FontAwesome 4.7 links to reduce bloat -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <!-- Loại bỏ jQuery trùng phiên bản cũ để tránh xung đột -->
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.js"></script> -->
+
+    <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <link rel="stylesheet" href="/admin/css/style-skill-buttons.css">
+    <!-- KHÔNG load /admin/js/menu.js nữa để tránh ảnh hưởng load bảng -->
+    <style>
+      /* remove inline button colors; kept grid if needed elsewhere */
+      .grade-grid{display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:6px;}
+      .grade-grid .btn{width:100%;border:none;font-weight:600;}
+
+      .history-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;max-width:90%;max-height:80vh;z-index:1055;background:#fff;border:2px solid #0d6efd;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.4);display:none;flex-direction:column;}
+      .history-overlay-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:#0d6efd;color:#fff;border-top-left-radius:6px;border-top-right-radius:6px;}
+      .history-overlay-body{padding:.75rem;overflow:auto;}
+      .history-overlay-close{background:transparent;border:none;color:#fff;font-size:1.2rem;line-height:1;}
+      .fade-in-scale{animation:histScale .18s ease-out;}
+      @keyframes histScale{0%{opacity:0;transform:translate(-50%,-50%) scale(.85);}100%{opacity:1;transform:translate(-50%,-50%) scale(1);} }
+    </style>
+    <!-- Script layout teacher để inject navleft & headerweb -->
+    <script src="/teacher/js/main.js"></script>
+</head>
+<body class="sb-nav-fixed">
+<!-- Thay cấu trúc sidebar/nav cũ bằng layout teacher đồng bộ với ketqua.html -->
+<div id="navleft" class="navleft"></div>
+<div class="contentweb">
+  <div id="headerweb" class="headerweb"></div>
+  <main class="contentmain">
+    <!-- ...existing code main content from old layoutSidenav_content/main... -->
+    <div class="col-sm-12 header-sp"></div>
+    <div class="col-sm-12">
+      <div class="wrapper">
+        <button id="exportExcel" class="btn btn-success">Xuất Excel</button>
+        <table id="example" class="table table-striped tablefix">
+          <thead class="thead-tablefix">
+          <tr>
+            <th>Học viên</th>
+            <th>Số lần làm</th>
+            <th>Tổng câu</th>
+            <th>Đã TL</th>
+            <th>Đúng</th>
+            <th>% đúng</th>
+            <th>Band điểm</th>
+          </thead>
+          <tbody id="listresult"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ...existing code modals remain unchanged... -->
+<div class="modal fade" id="practiceWritingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chấm Writing (Ôn luyện)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="practiceWritingList">
+        <em>Chưa tải dữ liệu.</em>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="practiceReadingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Chấm Reading (Ôn luyện)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body" id="practiceReadingList"><em>Chưa tải dữ liệu.</em></div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="practiceListeningModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Chấm Listening (Ôn luyện)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body" id="practiceListeningList"><em>Chưa tải dữ liệu.</em></div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="practiceSpeakingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Chấm Speaking (Ôn luyện)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body" id="practiceSpeakingList"><em>Chưa tải dữ liệu.</em></div>
+    </div>
+  </div>
+</div>
+
+<!-- Replace overlay with reusable History Modal like ketqua -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyTitle">Lịch sử chấm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="historyBody">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dynamic token retrieval to avoid early null capture
+  function authToken(){
+     return localStorage.getItem('token') || sessionStorage.getItem('token');
+  }
+  // Toggle sidebar script cũ đã bỏ vì dùng layout teacher; giữ lại nếu cần sau này.
+
+  async function loadPracticeResults(){
+    const examId = getExamId();
+    if(!examId){
+      console.warn('[Practice] examId thiếu trong URL, ví dụ ?exam=123');
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Thiếu tham số exam (?exam=...). Không thể tải dữ liệu.</td></tr>';
+      return;
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="8" class="text-center text-muted">Thiếu tham số exam (?exam=...). Không thể tải dữ liệu.</td></tr>';
+    const tk = authToken();
+    if(!tk){
+      console.warn('[Practice] Không tìm thấy token trong localStorage/sessionStorage');
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Thiếu token. Vui lòng đăng nhập lại.</td></tr>';
+      return;
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Thiếu token. Vui lòng đăng nhập lại.</td></tr>';
+    if(window.$ && $.fn.DataTable) { try{ $('#example').DataTable().destroy(); }catch(e){} }
+    const url = '/api/practice/admin/exam-user-summaries?examId='+encodeURIComponent(examId);
+    console.log('[Practice] Fetching summaries:', url);
+    let res;
+    try{ res = await fetch(url, {headers:{'Authorization':'Bearer '+tk}}); }catch(networkErr){
+      console.error('[Practice] Network error:', networkErr);
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi mạng khi tải dữ liệu.</td></tr>';
+      return;
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Lỗi mạng khi tải dữ liệu.</td></tr>';
+    if(res.status>=300){
+      console.error('[Practice] HTTP lỗi:', res.status);
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="7" class="text-center text-danger">HTTP '+res.status+' - Không tải được dữ liệu</td></tr>';
+      return;
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="8" class="text-center text-danger">HTTP '+res.status+' - Không tải được dữ liệu</td></tr>';
+    let list;
+    try{ list = await res.json(); }catch(parseErr){
+      console.error('[Practice] JSON parse error:', parseErr);
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi xử lý dữ liệu.</td></tr>';
+      return;
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Lỗi xử lý dữ liệu.</td></tr>';
+    if(!Array.isArray(list) || list.length===0){
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu ôn luyện.</td></tr>';
+      return;
+      document.getElementById('listresult').innerHTML = '<tr><td colspan="8" class="text-center text-muted">Không có dữ liệu ôn luyện.</td></tr>';
+    let html='';
+    for(let u of list){
+      let quickGradeHtml = `<div class='row row-cols-2 g-1'>
+        ${u.hasReading ? `<div class='col'><button class='btn btn-sm w-100 btn-skill btn-skill-reading' style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background-color:#95e1d3;border-color:#95e1d3;color:white;font-weight:bold' title='Reading' onclick='openPracticeSkill("READING", ${u.userId})'>R</button></div>` : ''}
+        ${u.hasListening ? `<div class='col'><button class='btn btn-sm w-100 btn-skill btn-skill-listening' style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background-color:#4ecdc4;border-color:#4ecdc4;color:white;font-weight:bold' title='Listening' onclick='openPracticeSkill("LISTENING", ${u.userId})'>L</button></div>` : ''}
+        ${u.hasSpeaking ? `<div class='col'><button class='btn btn-sm w-100 btn-skill btn-skill-speaking' style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background-color:#feca57;border-color:#feca57;color:white;font-weight:bold' title='Speaking' onclick='openPracticeSkill("SPEAKING", ${u.userId})'>S</button></div>` : ''}
+        ${u.hasWriting ? `<div class='col'><button class='btn btn-sm w-100 btn-skill btn-skill-writing' style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background-color:#ff6b6b;border-color:#ff6b6b;color:white;font-weight:bold' title='Writing' onclick='openPracticeWriting(${u.userId})'>W</button></div>` : ''}
+      </div>`;
+      html += `<tr id='userRow_${u.userId}'>
+        <td>
+        </td>
+        <td>${u.numSessions||0}</td>
+        <td>${u.totalQuestions||0}</td>
+        <td>${u.totalAnswered||0}</td>
+        <td>${u.totalCorrect||0}</td>
+        <td>${u.percentCorrectOverall? u.percentCorrectOverall.toFixed(1):'0.0'}%</td>
+        <td>${quickGradeHtml}</td>
+      </tr>`;
+    }
+    document.getElementById('listresult').innerHTML = html;
+        <td><strong style="color: #0d6efd; font-size: 1.1em;">${u.bandScore != null ? u.bandScore.toFixed(1) : '0.0'}</strong></td>
+
+  function getExamId(){
+    const u = new URL(document.URL);
+    // hỗ trợ cả exam và examId nếu nhầm tên param
+    return u.searchParams.get('exam') || u.searchParams.get('examId') || null;
+  }
+
+  function isAnswered(q){
+    return !!(
+      (q.answerText && q.answerText.trim().length>0) ||
+      q.selectedAnswerId ||
+      (q.userAudio && q.userAudio.length>0) ||
+      (q.speakingAudio && String(q.speakingAudio).length>0)
+    );
+  }
+  async function fetchSkillAnswers(examId, skill){
+    const tk = authToken();
+    const r = await fetch(`/api/practice/admin/skill-answers?examId=${examId}&skill=${skill}`, {headers:{'Authorization':'Bearer '+tk}});
+    if(!r.ok) return [];
+    try{ return await r.json(); }catch(e){ return []; }
+  }
+  async function fetchWritingAnswers(examId){
+    const tk = authToken();
+    try{
+      const r = await fetch(`/api/practice/admin/writing-answers?examId=${examId}`, {headers:{'Authorization':'Bearer '+tk}});
+      if(!r.ok) return [];
+      return await r.json();
+    }catch(e){ return []; }
+  }
+  async function loadAllSkillPending(examId, userIds){
+    // ĐÃ XOÁ toàn bộ logic cập nhật badge pending
+    // Hàm này có thể để trống hoặc bỏ hoàn toàn nếu không dùng nơi khác
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    if(typeof injectTeacherLayout === 'function'){ injectTeacherLayout(); }
+    document.getElementById('exportExcel').addEventListener('click', function () {
+        var table = document.getElementById('example');
+        var wb = XLSX.utils.table_to_book(table, {sheet: 'Sheet1'});
+        XLSX.writeFile(wb, 'Kết quả ôn luyện.xlsx');
+    });
+    loadPracticeResults();
+  });
+
+  function openPracticeWriting(userId){
+     document.getElementById('practiceWritingList').innerHTML = '<em>Đang tải...</em>';
+     var modalEl = document.getElementById('practiceWritingModal');
+     if(window.bootstrap && bootstrap.Modal){
+        var m = bootstrap.Modal.getOrCreateInstance(modalEl);
+        m.show();
+     } else if(window.$) {
+        $('#practiceWritingModal').modal('show');
+     }
+     loadPracticeWritingAnswers(userId);
+  }
+  async function loadPracticeWritingAnswers(userId){
+     const examId = getExamId();
+     const tk = authToken();
+     const res = await fetch('/api/practice/admin/writing-answers?examId='+examId, {headers:{'Authorization':'Bearer '+tk}});
+    if(res.status>=300){ document.getElementById('practiceWritingList').innerHTML = '<div class="alert alert-danger">Không tải được bài viết</div>'; return; }
+    const all = await res.json();
+    const list = (all||[]).filter(x=>x.userId===userId);
+    if(list.length===0){ document.getElementById('practiceWritingList').innerHTML = '<div class="alert alert-info">Không có câu cần chấm.</div>'; return; }
+
+    const submitted = list.length;
+    const graded = list.filter(x => x.graded).length;
+    const pending = submitted - graded;
+
+     function cardWriting(w){
+        return `<div class='card mb-2'><div class='card-body'>
+          <p><strong>${(w.lessonName||'').replace(/</g,'&lt;')}</strong> - #${w.id}</p>
+          <p>Trạng thái: ${w.graded? '<span class="badge bg-success">Đã chấm</span>':'<span class="badge bg-warning text-dark">Chờ chấm</span>'}</p>
+          <div class='mb-1'><strong>Trả lời học viên:</strong></div>
+          <div class='p-2 border bg-light' style='white-space:pre-line'>${(w.answerText||'').replace(/</g,'&lt;')}</div>
+          ${w.graded? `<p><strong>Điểm:</strong> ${w.manualScore??'-'}<br><strong>Nhận xét:</strong> <span style='white-space:pre-line;word-break:break-word;overflow-wrap:break-word;font-weight:normal;'>${(w.feedback||'').replace(/</g,'&lt;')}</span></p>`:''}
+          <div class='row g-2 align-items-center mt-2 card-grade-inputs' data-psq='${w.id}'>
+            <div class='col-auto'><input type='number' min='0' max='9' step='1' id='p_score_${w.id}' class='form-control form-control-sm score-input' data-field='score' data-psq='${w.id}' value='${w.manualScore??''}' placeholder='Điểm'></div>
+            <div class='col'><textarea id='p_fb_${w.id}' class='form-control form-control-sm feedback-input' data-field='feedback' data-psq='${w.id}' rows='2' placeholder='Nhận xét'>${w.feedback??''}</textarea></div>
+            <div class='col-auto'><button class='btn btn-sm btn-primary' onclick='gradePracticeWriting(${w.id}, this)'>${w.graded? 'Chấm lại':'Chấm'}</button></div>
+            <div class='col-auto'><button class='btn btn-sm btn-outline-secondary' onclick='showHistoryOverlay(${w.id})'>Lịch sử</button></div>
+          </div>
+        </div></div>`;
+     }
+     const pendingItems = list.filter(x=> !x.graded);
+     const gradedItems  = list.filter(x=>  x.graded);
+
+     let tabsHtml = `<ul class='nav nav-tabs' role='tablist'>
+    <li class='nav-item'><button class='nav-link active' data-bs-toggle='tab' data-bs-target='#writing-all' type='button' role='tab'>Tất cả (${list.length})</button></li>
+    <li class='nav-item'><button class='nav-link' data-bs-toggle='tab' data-bs-target='#writing-pending' type='button' role='tab'>Chờ chấm (${pendingItems.length})</button></li>
+    <li class='nav-item'><button class='nav-link' data-bs-toggle='tab' data-bs-target='#writing-graded' type='button' role='tab'>Đã chấm (${gradedItems.length})</button></li>
+  </ul>
+  <div class='tab-content mt-3'>
+    <div class='tab-pane fade show active' id='writing-all' role='tabpanel'>${list.map(cardWriting).join('')}</div>
+    <div class='tab-pane fade' id='writing-pending' role='tabpanel'>${pendingItems.length? pendingItems.map(cardWriting).join('') : '<div class="alert alert-info">Không có bài chờ chấm.</div>'}</div>
+    <div class='tab-pane fade' id='writing-graded' role='tabpanel'>${gradedItems.length? gradedItems.map(cardWriting).join('') : '<div class="alert alert-secondary">Chưa có bài đã chấm.</div>'}</div>
+  </div>`;
+     document.getElementById('practiceWritingList').innerHTML = tabsHtml;
+     // Always activate 'Tất cả' tab after reload
+     try{
+       const btnAll = document.querySelector("#practiceWritingList [data-bs-target='#writing-all']");
+       if(btnAll){
+         if(window.bootstrap && bootstrap.Tab){ bootstrap.Tab.getOrCreateInstance(btnAll).show(); }
+         else { btnAll.click(); }
+       }
+     }catch(e){}
+  }
+  async function gradePracticeWriting(psqId, btn){
+     let scope = null;
+     if(btn && typeof btn.closest === 'function'){
+        scope = btn.closest('.card-grade-inputs') || btn.closest('.card');
+     }
+     let scoreEl = scope ? scope.querySelector("[data-field='score'][data-psq='"+psqId+"']") : null;
+     let fbEl = scope ? scope.querySelector("[data-field='feedback'][data-psq='"+psqId+"']") : null;
+     if(!scoreEl){ scoreEl = document.getElementById('p_score_'+psqId); }
+     if(!fbEl){ fbEl = document.getElementById('p_fb_'+psqId); }
+     if(!scoreEl){ toastr.error('Thiếu điểm'); return; }
+     let score = scoreEl.value;
+     if(score==='' || score<0 || score>9){ toastr.error('Điểm không hợp lệ (0-9)'); return; }
+     const feedback = fbEl? fbEl.value : '';
+     const tk = authToken();
+     const res = await fetch('/api/practice/admin/grade-writing?psqId='+psqId+'&score='+score+'&feedback='+encodeURIComponent(feedback), {method:'POST', headers:{'Authorization':'Bearer '+tk}});
+     if(res.status<300){ toastr.success('Đã chấm');
+        const examId = getExamId();
+        const listRes = await fetch('/api/practice/admin/writing-answers?examId='+examId, {headers:{'Authorization':'Bearer '+tk}});
+        if(listRes.status<300){ const all = await listRes.json(); const userId = all.find(x=>x.id===psqId)?.userId; if(userId){ loadPracticeWritingAnswers(userId); } }
+        // Removed auto-switch to graded tab for writing
+     } else {
+        try{ const err = await res.json(); toastr.error(err.defaultMessage||'Lỗi'); }catch(e){ toastr.error('Lỗi'); }
+     }
+  }
+
+  function computePracticeStatus(q){
+     if(q.practiceGraded){ return '<span class="badge bg-success">Đã chấm</span>'; }
+     const hasAnswer = !!(
+        (q.answerText && q.answerText.trim().length>0) ||
+        q.selectedAnswerId ||
+        (q.userAudio && q.userAudio.length>0)
+     );
+     if(hasAnswer){ return '<span class="badge bg-warning text-dark">Chờ chấm</span>'; }
+     return '<span class="badge bg-secondary">Chưa nộp</span>';
+  }
+
+  function formatPracticeScoreForSkill(skill, score){
+    if(score===undefined || score===null || String(score).trim()===''){ return '-'; }
+    const upper = String(skill||'').toUpperCase();
+    if(upper==='READING' || upper==='LISTENING'){
+      const num = Number(score);
+      if(!Number.isNaN(num)){
+        if(num===1) return 'Đúng';
+        if(num===0) return 'Sai';
+      }
+    }
+    return score;
+  }
+
+  function buildSkillSummary(skill, list){
+     if(!list || list.length===0) return '';
+     let submitted = 0, graded = 0;
+     list.forEach(q=>{
+        const hasAnswer = (q.answerText && q.answerText.trim().length>0) || q.selectedAnswerId || (q.userAudio && q.userAudio.length>0);
+        if(hasAnswer) submitted++;
+        if(q.practiceGraded) graded++;
+     });
+     const pending = graded>=submitted? 0 : (submitted - graded);
+     const skillNameMap = {READING:'Reading', LISTENING:'Listening', SPEAKING:'Speaking'};
+     const label = skillNameMap[skill] || skill;
+     return `<div class='mb-3 p-2 border rounded bg-light'>
+        <strong>Tổng ${label}:</strong>
+        <span class='ms-2'>Tổng câu: <strong>${list.length}</strong></span>
+        <span class='ms-2'>Đã nộp: <strong>${submitted}</strong></span>
+        <span class='ms-2'>Chờ chấm: <strong>${pending}</strong></span>
+        <span class='ms-2'>Đã chấm: <strong>${graded}</strong></span>
+     </div>`;
+  }
+
+  function openPracticeSkill(skill, userId){
+  let modalId, listId;
+  if(skill==='READING'){ modalId='practiceReadingModal'; listId='practiceReadingList'; }
+  else if(skill==='LISTENING'){ modalId='practiceListeningModal'; listId='practiceListeningList'; }
+  else if(skill==='SPEAKING'){ modalId='practiceSpeakingModal'; listId='practiceSpeakingList'; }
+  else { return Promise.reject('Skill không hợp lệ'); }
+  document.getElementById(listId).innerHTML='<em>Đang tải...</em>';
+  const examId = getExamId();
+  const tk = authToken();
+  const p = fetch(`/api/practice/admin/skill-answers?examId=${examId}&skill=${skill}`, {headers:{'Authorization':'Bearer '+tk}})
+    .then(r=>{ if(!r.ok) throw r; return r.json(); })
+    .then(list=>{
+          let filtered = (list||[]).filter(x=> x.userId===userId);
+          if(skill==='LISTENING'){
+            filtered = filtered.filter(x=>{
+              const t = String(x.questionType||'').toUpperCase();
+              return t.includes('FILL')||t.includes('TEXTAREA')||t.includes('SHORT')||t.includes('ESSAY')||t.includes('OPEN');
+            });
+          }
+          if(skill==='READING'){
+            filtered = filtered.filter(x=>{
+              const t = String(x.questionType||'').toUpperCase();
+              return t.includes('FILL')||t.includes('TEXTAREA')||t.includes('SHORT')||t.includes('ESSAY')||t.includes('OPEN');
+            });
+          }
+          if(filtered.length===0){ document.getElementById(listId).innerHTML='<div class="alert alert-info">Không có câu cần chấm.</div>'; return; }
+          let html='';
+
+          const pendingArr = filtered.filter(q=> !q.practiceGraded);
+          const gradedArr  = filtered.filter(q=>  q.practiceGraded);
+          function cardSkill(q){
+             const answeredSpeaking = (q.answerText && q.answerText.trim().length>0) || q.userAudio || q.speakingAudio;
+             const statusHtml = (skill==='SPEAKING')
+               ? (q.practiceGraded ? '<span class="badge bg-success">Đã chấm</span>' : (answeredSpeaking ? '<span class="badge bg-warning text-dark">Chờ chấm</span>' : '<span class="badge bg-secondary">Chưa nộp</span>'))
+               : computePracticeStatus(q);
+             let media='';
+             if(skill==='SPEAKING'){
+                const promptAudio = q.linkAudio;
+                const userAudio = (q.answerText && String(q.answerText).trim().length>0) ? q.answerText : (q.userAudio || q.speakingAudio);
+                if(promptAudio){ media += `<div class='mb-2'><small class='text-muted'>Audio đề:</small><audio controls style='width:100%;'><source src='${promptAudio}'></audio></div>`; }
+                if(userAudio){
+                  media += `<div class='mb-2'>
+                    <small class='text-muted'>Audio học viên:</small>
+                    <audio id='stuAudio_${q.id}' controls style='width:100%'><source src='${userAudio}'></audio>
+                  </div>`;
+                }
+             }
+             let answerDetails='';
+             if(skill==='READING' || skill==='LISTENING'){
+                const hasText = q.answerText && String(q.answerText).trim().length>0;
+                answerDetails = `<div class='mt-2'><strong>Trả lời học viên:</strong><div class='p-2 bg-light border rounded small' style='white-space:pre-line'>${hasText ? (String(q.answerText).replace(/</g,'&lt;')) : '<em>Chưa nhập</em>'}</div></div>`;
+             } else if(skill==='SPEAKING'){
+                const userAudio = (q.answerText && String(q.answerText).trim().length>0) ? q.answerText : (q.userAudio || q.speakingAudio);
+                const attemptsHtml = (q.speakingAttempts && q.speakingAttempts>0) ? `<span class='badge bg-info ms-2'>Lần nộp: ${q.speakingAttempts}</span>` : '';
+             }
+             const resultText = formatPracticeScoreForSkill(skill, q.practiceScore);
+             const gradedSummary = `<div id='graded_sum_${q.id}' class='mt-2 small'>
+               <strong>Kết quả:</strong> <span>${resultText}</span>
+               ${q.practiceFeedback
+                 ? `<br><strong>Nhận xét:</strong> <span style="white-space:pre-line;word-break:break-word;overflow-wrap:break-word;display:inline-block;max-width:100%;font-weight:normal;">${String(q.practiceFeedback).replace(/</g,'&lt;')}</span>`
+                 : ''}
+             </div>`;
+             const gradeControls = (skill==='READING' || skill==='LISTENING')
+               ? `<div class='mt-2 row g-2 align-items-center'>
+                    <div class='col-auto' style='min-width:unset;max-width:unset;'>
+                      <select class='form-select form-select-sm' id='skill_score_${q.id}' style='width:auto;min-width:80px;max-width:100px;'>
+                        <option value='' ${q.practiceScore===null || q.practiceScore===undefined || q.practiceScore===' '? 'selected':''}>Chọn</option>
+                        <option value='1' ${Number(q.practiceScore)===1? 'selected':''}>Đúng</option>
+                        <option value='0' ${Number(q.practiceScore)===0? 'selected':''}>Sai</option>
+                      </select>
+                    </div>
+                    <div class='col'><textarea class='form-control form-control-sm' id='skill_fb_${q.id}' placeholder='Nhận xét' rows='2'>${q.practiceFeedback??''}</textarea></div>
+                    <div class='col-auto'><button class='btn btn-sm btn-primary' onclick='gradePracticeSkill(${q.id}, "${skill}", ${q.userId})'>${q.practiceGraded? 'Chấm lại':'Chấm'}</button></div>
+                    <div class='col-auto'><button class='btn btn-sm btn-outline-secondary' onclick='showHistoryOverlay(${q.id})'>Lịch sử</button></div>
+                 </div>`
+               : `<div class='mt-2 row g-2 align-items-center'>
+                    <div class='col-auto'>
+                      <input type='number' min='0' max='9' step='1' class='form-control form-control-sm' id='skill_score_${q.id}' value='${q.practiceScore??''}' placeholder='Điểm (0-9)'>
+                    </div>
+                    <div class='col'><textarea class='form-control form-control-sm' id='skill_fb_${q.id}' placeholder='Nhận xét' rows='2'>${q.practiceFeedback??''}</textarea></div>
+                    <div class='col-auto'><button class='btn btn-sm btn-primary' onclick='gradePracticeSkill(${q.id}, "${skill}", ${q.userId})'>${q.practiceGraded? 'Chấm lại':'Chấm'}</button></div>
+                    <div class='col-auto'><button class='btn btn-sm btn-outline-secondary' onclick='showHistoryOverlay(${q.id})'>Lịch sử</button></div>
+                 </div>`;
+             return `<div class='border rounded p-2 mb-2'>${/* ...existing card content... */''}
+               ${gradedSummary}
+               ${gradeControls}
+             </div>`;
+          }
+          const skillLower = skill.toLowerCase();
+          html += `<ul class='nav nav-tabs' role='tablist'>
+  <li class='nav-item'><button class='nav-link active' data-bs-toggle='tab' data-bs-target='#${skillLower}-all' type='button' role='tab'>Tất cả (${filtered.length})</button></li>
+  <li class='nav-item'><button class='nav-link' data-bs-toggle='tab' data-bs-target='#${skillLower}-pending' type='button' role='tab'>Chờ chấm (${pendingArr.length})</button></li>
+  <li class='nav-item'><button class='nav-link' data-bs-toggle='tab' data-bs-target='#${skillLower}-graded' type='button' role='tab'>Đã chấm (${gradedArr.length})</button></li>
+</ul>
+<div class='tab-content mt-3'>
+  <div class='tab-pane fade show active' id='${skillLower}-all' role='tabpanel'>${filtered.map(cardSkill).join('')}</div>
+  <div class='tab-pane fade' id='${skillLower}-pending' role='tabpanel'>${pendingArr.length? pendingArr.map(cardSkill).join('') : '<div class="alert alert-info">Không có mục chờ chấm.</div>'}</div>
+  <div class='tab-pane fade' id='${skillLower}-graded' role='tabpanel'>${gradedArr.length? gradedArr.map(cardSkill).join('') : '<div class="alert alert-secondary">Chưa có mục đã chấm.</div>'}</div>
+</div>`;
+          document.getElementById(listId).innerHTML = html;
+       })
+       .catch(()=>{ document.getElementById(listId).innerHTML='<div class="text-danger">Lỗi tải dữ liệu</div>'; });
+     if(window.bootstrap && bootstrap.Modal){ bootstrap.Modal.getOrCreateInstance(document.getElementById(modalId)).show(); }
+     else if(window.$){ $('#'+modalId).modal('show'); }
+  }
+  function gradePracticeSkill(psqId, skill, userId){
+    const scoreEl = document.getElementById('skill_score_'+psqId);
+    const fbEl = document.getElementById('skill_fb_'+psqId);
+    const fb = fbEl? fbEl.value.trim():'';
+    const rawScore = scoreEl?.value ?? '';
+    if(String(rawScore).trim()===''){
+      toastr.warning(skill==='READING' || skill==='LISTENING' ? 'Chọn Đúng/Sai' : 'Nhập điểm (0-9)');
+      return;
+    }
+    const numScore = Number(rawScore);
+    if(Number.isNaN(numScore)){
+      toastr.error('Điểm không hợp lệ');
+      return;
+    }
+    if(skill==='READING' || skill==='LISTENING'){
+      if(numScore!==0 && numScore!==1){
+        toastr.error('Chỉ chấp nhận Đúng hoặc Sai');
+        return;
+      }
+    } else if(numScore<0 || numScore>9){
+      toastr.error('Điểm không hợp l�� (0-9)');
+      return;
+    }
+    const tk = authToken();
+    const url = `/api/practice/admin/grade-skill?psqId=${psqId}&skill=${encodeURIComponent(skill)}&score=${encodeURIComponent(numScore)}&feedback=${encodeURIComponent(fb)}`;
+    fetch(url, {method:'POST', headers:{'Authorization':'Bearer '+tk}})
+      .then(async res=>{
+        if(!res.ok){
+          let msg = 'Lỗi chấm điểm';
+          try{ const body = await res.json(); msg = body?.defaultMessage || body?.message || msg; }
+          catch(e){ try{ msg = await res.text(); }catch(e2){} }
+          throw new Error(msg);
+        }
+        const sumEl = document.getElementById('graded_sum_'+psqId);
+        if(sumEl){
+          const safeFb = (fb||'').replace(/</g,'&lt;');
+          const scoreLabel = formatPracticeScoreForSkill(skill, numScore);
+          sumEl.innerHTML = `<strong>Kết quả:</strong> <span>${scoreLabel}</span>${fb? '<br><strong>Nhận xét:</strong> <span class="feedback-text">'+safeFb+'</span>' : ''}`;
+        }
+        toastr.success('Đã lưu');
+        try { openPracticeSkill(skill, userId); } catch(e){}
+        return true;
+      })
+      .then(()=>{
+        const target = `#${String(skill).toLowerCase()}-graded`;
+        const btnGraded = document.querySelector(`[data-bs-target='${target}']`);
+        if(btnGraded){
+          if(window.bootstrap && bootstrap.Tab){ bootstrap.Tab.getOrCreateInstance(btnGraded).show(); }
+          else { btnGraded.click(); }
+        }
+      })
+      .catch(err=> toastr.error(err?.message || 'Lỗi không xác định'));
+  }
+  function showHistoryOverlay(psqId){ openHistoryPractice(psqId); }
+
+  function openHistoryPractice(psqId){
+     const tk = authToken();
+     const modalEl = document.getElementById('historyModal');
+     const bodyEl = document.getElementById('historyBody');
+     const titleEl = document.getElementById('historyTitle');
+     if(titleEl){ titleEl.textContent = 'Lịch sử chấm #'+psqId; }
+     bodyEl.innerHTML = '<p class="text-muted">Đang tải lịch sử...</p>';
+     fetch('/api/practice/admin/skill-history?psqId='+psqId, {headers:{'Authorization':'Bearer '+tk}})
+       .then(r=> r.ok? r.json(): Promise.reject(r))
+       .then(list=>{
+         const formatHistoryScore = (h)=>{
+           const skillName = ((h.skill || h.skillName || '')+'').toUpperCase();
+           if(skillName === 'READING' || skillName === 'LISTENING'){
+             const numScore = Number(h.score);
+             if(numScore === 1) return 'Đúng';
+             if(numScore === 0) return 'Sai';
+             return '';
+           }
+           return h.score ?? '';
+         };
+         if(!Array.isArray(list) || list.length===0){ bodyEl.innerHTML = '<p class="text-muted">Chưa có lịch sử.</p>'; return; }
+         let html = '<table class="table table-sm table-bordered mb-2"><thead><tr><th style="min-width:140px;white-space:nowrap;">Thời gian</th><th>Điểm</th><th>Nhận xét</th><th style="min-width:160px;white-space:nowrap;">Người chấm</th></tr></thead><tbody>';
+         for(const h of list){
+            const gradedAt = (h.gradedAt||'').toString().replace('T',' ');
+            const fb = (h.feedback||'')
+              .toString()
+              .replace(/</g,'&lt;')
+              .replace(/\n/g,'<br>');
+            html += `<tr>
+              <td>${gradedAt}</td>
+              <td>${formatHistoryScore(h)}</td>
+              <td style="white-space:pre-line;word-break:break-word;">${fb}</td>
+              <td style='white-space:nowrap;min-width:160px;'>${h.graderName||''}</td>
+            </tr>`;
+         }
+         html += '</tbody></table>';
+         bodyEl.innerHTML = html;
+       })
+       .catch(async err=>{
+         try{ const e=await err.json(); bodyEl.innerHTML = `<div class='alert alert-danger mb-0'>${e.defaultMessage||'Lỗi tải lịch sử'}</div>`; }
+         catch(e){ bodyEl.innerHTML='<div class="alert alert-danger mb-0">Lỗi tải lịch sử</div>'; }
+       });
+     if(window.bootstrap && bootstrap.Modal){ bootstrap.Modal.getOrCreateInstance(modalEl).show(); }
+     else if(window.$){ $('#historyModal').modal('show'); }
+  }
+
+  // Remove old overlay nodes if present (keep no-op to avoid errors)
+  function hideHistoryOverlay(){
+     try{ if(window.bootstrap && bootstrap.Modal){ const m = bootstrap.Modal.getOrCreateInstance(document.getElementById('historyModal')); m.hide(); } }catch(e){}
+  }
+
+  function dangXuat(){
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.replace('../login');
+  }
+</script>
+</body>
+</html>

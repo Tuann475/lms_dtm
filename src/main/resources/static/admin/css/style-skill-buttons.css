@@ -1,0 +1,7 @@
+/* Skill grading buttons shared styles */
+.row .btn-skill{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:bold;color:#fff;}
+.btn-skill-reading{background-color:#95e1d3;border-color:#95e1d3;}
+.btn-skill-listening{background-color:#4ecdc4;border-color:#4ecdc4;}
+.btn-skill-speaking{background-color:#feca57;border-color:#feca57;color:#000;}
+.btn-skill-writing{background-color:#ff6b6b;border-color:#ff6b6b;}
+

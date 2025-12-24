@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link href="css/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/question.js"></script>
+    <script>
+        window.onload = function () {
+            loadQuestion();
+        }
+    </script>
+</head>
+
+<body class="sb-nav-fixed">
+<nav id="top" class="sb-topnav navbar navbar-expand navbar-dark bg-dark"></nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav"></div>
+    <div id="layoutSidenav_content">
+        <main class="main">
+            <div class="col-sm-12 header-sp">
+                <div class="row">
+                    <div class="col-md-3">
+                        <button onclick="clearDataCauHoi()" data-bs-toggle="modal" data-bs-target="#addtk"
+                                class="btn btn-success"><i class="fa fa-plus"></i> Thêm câu hỏi
+                        </button>
+                    </div>
+                    <div class="col-md-9 text-end">
+                        <span id="currentSkillLabel" class="badge bg-secondary" style="display:none;"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="wrapper">
+                    <table id="example" class="table table-striped tablefix">
+                        <thead class="thead-tablefix">
+                        <tr>
+                            <th>id</th>
+                            <th>Câu hỏi</th>
+                            <th>Phần thi</th>
+                            <th>Bài thi</th>
+                            <th>Đáp án</th>
+                            <th class="sticky-col">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="listQuestion">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+</body>
+
+<div class="modal fade" id="addtk" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Thêm cập nhật câu hỏi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row">
+                <form action="javascript:saveCauHoi()" class="col-sm-6" style="margin: auto;">
+                    <label class="lb-form">Câu hỏi <span style="color: red;">*</span></label>
+                    <input id="idcauhoi" type="hidden" class="form-control">
+                    <input id="title" type="text" class="form-control" required>
+                    <div id="writingTypeGroup" style="display:none;">
+                        <label class="lb-form" style="margin-top:10px;">Loại Writing</label>
+                        <select id="writingType" class="form-control">
+                            <option value="">--Không chọn--</option>
+                            <option value="TASK1">TASK 1</option>
+                            <option value="TASK2">TASK 2</option>
+                            <option value="ESSAY">ESSAY</option>
+                            <option value="OPINION">OPINION</option>
+                        </select>
+                    </div>
+                    <div id="speakingGroup" style="display:none; margin-top:10px;">
+                        <label class="lb-form">Ghi chú</label>
+                        <textarea id="speakingNote" class="form-control" rows="4"></textarea>
+                        <label class="lb-form" style="margin-top:10px;">Voice</label>
+                        <select id="speakingVoice" class="form-control">
+                            <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Mặc định)</option>
+                            <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
+                            <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
+                            <option value="ErXwobaYiN019PkySvjV">Antoni</option>
+                        </select>
+                        <button type="button" id="btnGenVoice" class="btn btn-secondary w-100 mt-2" onclick="generateSpeakingAudio()">Tạo voice AI</button>
+                        <div id="speakingAudioWrap" style="display:none;margin-top:10px;">
+                            <audio id="speakingAudio" controls></audio>
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
+                                <a id="speakingAudioLink" href="#" target="_blank" class="btn btn-outline-primary btn-sm" style="display:none;">Mở/Tải MP3</a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSpeakingAudio()">Xóa audio</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="questionTypeGroup" style="display:none; margin-top:10px;">
+                        <label class="lb-form">Loại câu hỏi</label>
+                        <select id="questionType" class="form-control">
+                            <option value="">--Chọn loại--</option>
+                            <option value="MCQ">Trắc nghiệm</option>
+                            <option value="FILL">Nhập vào ô trống (Text)</option>
+                        </select>
+                    </div>
+                    <br>
+                    <button class="form-control btn btn-primary">Thêm/ cập nhật câu hỏi</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addcautl" tabindex="-1" aria-labelledby="exampleModalLabelAnswer" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabelAnswer">Thêm cập nhật câu trả lời</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row">
+                <form action="javascript:saveCauTraLoi()" class="col-sm-6" style="margin: auto;">
+                    <label class="lb-form" style="margin-top:10px;">Đáp án <span style="color: red;">*</span></label>
+                    <input id="iddapan" type="hidden" class="form-control">
+                    <input id="idquestion" type="hidden" class="form-control">
+                    <input id="tieudectl" type="text" class="form-control" placeholder="Nhập nội dung đáp án" />
+                    <textarea id="tieudectl_text" class="form-control" placeholder="Nhập nội dung text" rows="3" style="display:none; margin-top:6px;"></textarea>
+                    <div id="wrapIsTrue" style="margin-top:8px;">
+                        <label class="checkbox-custom">Đáp án đúng
+                            <input id="istrue" type="checkbox">
+                            <span class="checkmark-checkbox"></span>
+                        </label>
+                    </div>
+                    <div id="hintFill" class="text-muted" style="display:none; font-size:12px; margin-top:4px;"></div>
+                    <br>
+                    <button class="form-control btn btn-primary">Thêm/ cập nhật câu trả lời</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $('#example').DataTable({
+        ordering: false
+    });
+
+    // Override loadQuestion to show skill badge after data loaded
+    if(typeof loadQuestion === 'function'){
+        var _adminOrigLoadQuestion = loadQuestion;
+        loadQuestion = async function(){
+            try { await _adminOrigLoadQuestion(); } catch(e){ console.warn('loadQuestion error', e); }
+            try {
+                var skill = (window.lessonSkill || '').toUpperCase();
+                var badge = document.getElementById('currentSkillLabel');
+                if(badge){
+                    if(skill){ badge.textContent = 'Skill: ' + skill; badge.style.display=''; }
+                    else { badge.style.display='none'; }
+                }
+            } catch(e){ console.warn('Skill badge error', e); }
+        };
+    }
+    window.onload = function(){ loadQuestion(); };
+</script>
+</html>

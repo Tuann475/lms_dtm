@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/logo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+    <link href='https://fonts.googleapis.com/css?family=Quicksand' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.2/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/main.js"></script>
+    <script src="js/khoahoc.js"></script>
+    <script>
+        window.onload = function () {
+            loadKhoaHocCuaToi();
+        }
+        // Script đóng dropdown khi click ra ngoài (khi dùng position: static)
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('.singlekhoahoc .dropdown-menu.show').forEach(function(menu) {
+                if (!menu.contains(event.target) && !menu.previousElementSibling.contains(event.target)) {
+                    menu.classList.remove('show');
+                }
+            });
+        });
+        // Bắt sự kiện click để toggle dropdown menu (vì position: static nên không dùng JS của Bootstrap)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.singlekhoahoc .dropdown-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var menu = btn.nextElementSibling;
+                    if (menu.classList.contains('show')) {
+                        menu.classList.remove('show');
+                    } else {
+                        document.querySelectorAll('.singlekhoahoc .dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
+                        menu.classList.add('show');
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        .row#listcoursect {
+            /* Sử dụng grid Bootstrap, không dùng flexbox */
+        }
+        .col-sm-4.mb-4 {
+            width: 33.333%;
+            max-width: 33.333%;
+            min-width: 260px;
+            box-sizing: border-box;
+            display: block;
+            float: left;
+        }
+        .singlekhoahoc {
+            width: 100%;
+            min-height: 120px;
+            max-width: 100%;
+            padding: 10px 10px 18px 10px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            height: auto; /* Chiều cao cố định cho card khoá học */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .imgkhoahocct {
+            display: block;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        .tenkhoahoc {
+            width: 100%;
+            max-width: 100%;
+            word-break: break-word;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+            display: block;
+            line-height: 1.4;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        /* Đảm bảo dropdown menu luôn hiển thị đúng, không bị che khuất */
+        .singlekhoahoc .dropdown-menu {
+            position: static !important;
+            float: none;
+            min-width: 150px;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .singlekhoahoc .dropdown {
+            width: auto;
+        }
+        .card-body {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        @media (max-width: 992px) {
+            .col-sm-4.mb-4 {
+                width: 50%;
+                max-width: 50%;
+                min-width: 160px;
+            }
+        }
+        @media (max-width: 576px) {
+            .col-sm-4.mb-4 {
+                width: 100%;
+                max-width: 100%;
+                min-width: 120px;
+            }
+            .singlekhoahoc {
+                padding: 8px 4px 12px 4px;
+            }
+            .tenkhoahoc {
+                font-size: 14px;
+            }
+            .singlekhoahoc .dropdown-menu {
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="navleft" id="navleft"></div>
+<div class="contentweb">
+    <div class="headerweb" id="headerweb"></div>
+    <div class="contentmain">
+        <h3>Khóa học của tôi</h3>
+        <div class="row" id="listcoursect">
+            <!-- Example course item with Bootstrap 5 col-sm-4 and dropdown -->
+            <!--
+            <div class="col-sm-4 mb-4">
+                <div class="singlekhoahoc d-flex align-items-center position-relative">
+                    <img src="image_url" class="imgkhoahocct me-2">
+                    <p class="tenkhoahoc mb-0 flex-grow-1">Course Name</p>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Tài liệu</a></li>
+                            <li><a class="dropdown-item" href="#">Nội dung</a></li>
+                            <li><a class="dropdown-item" href="#">Thống kê</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+    </div>
+</div>
+</body>
+<div id="divdoimk"></div>
+</html>

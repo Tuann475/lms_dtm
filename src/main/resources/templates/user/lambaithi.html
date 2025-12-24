@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/logo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+    <link href='https://fonts.googleapis.com/css?family=Quicksand' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+          integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/main.js"></script>
+    <script src="js/account.js"></script>
+    <script src="js/course.js"></script>
+    <script src="js/exam.js"></script>
+    <script src="js/lesson.js"></script>
+    <script>
+        window.onload = function () {
+            loadMenu();
+            loadThongTinDeThi();
+            getAllLesson();
+        }
+        // Cờ để phân biệt nộp/thoát chủ động
+        window.isSubmitting = false;
+        // Handler cảnh báo rời trang
+        window.beforeUnloadHandler = function(e){
+            if(window.isSubmitting){ return; }
+            e.preventDefault();
+            e.returnValue = 'Bạn đang làm bài thi. Rời trang sẽ mất tiến trình. Bạn có chắc muốn rời?';
+            return e.returnValue;
+        };
+        window.addEventListener('beforeunload', window.beforeUnloadHandler);
+
+        function exitExam() {
+            var uls = new URL(document.URL);
+            var examId = uls.searchParams.get('exam');
+            if (confirm('Bạn có chắc muốn thoát? Bài làm chưa nộp sẽ mất.')) {
+                try { clearInterval(looper); } catch (e) {}
+                // Không hiện cảnh báo khi thoát chủ động
+                window.isSubmitting = true;
+                window.removeEventListener('beforeunload', window.beforeUnloadHandler);
+                if (examId) {
+                    window.location.href = 'dethi?id=' + examId;
+                } else {
+                    window.location.href = 'dethi';
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg headermain" id="menu">
+</nav>
+
+<div class="contentmain" style="padding-left:10px;padding-right: 10px;background: #f8f9fa;padding-bottom: 100px;">
+    <p class="tenbaithilb"><span id="tenbaithi"> </span>
+        <button class="btnthoat" onclick="exitExam()">Thoát</button>
+    </p>
+    <div class="row" style="margin-top: 50px;">
+        <div class="col-sm-10">
+            <div class="sesctiondethi">
+                <ul class="nav nav-tabs mb-3" id="ex1-listtab" role="tablist">
+                    <!-- Tabs sẽ được sinh động bởi lesson.js -->
+                </ul>
+                <div class="tab-content" id="ex1-content">
+                    <!-- Nội dung mỗi tab sẽ được sinh động bởi lesson.js -->
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="sesctiondethi">
+                <p>Thời gian còn lại:</p>
+                <h5 id="thoigiancl">--:--</h5>
+                <button onclick="nopBaiThi()" class="btn btn-outline-primary">Nộp bài thi</button>
+                <span class="chuuy">Chú ý: bạn có thể click vào số thứ tự câu hỏi trong bài để đánh dấu review</span>
+                <div id="ketqualam" style="display: none;">
+                    <span class="dapandungs">Đáp án đúng: <span id="sodadung"></span></span>
+                    <span class="dapansais">Đáp án sai: <span id="sodasai"></span></span>
+                    <span class="dapanccs">Số câu chưa chọn: <span id="socc"></span></span>
+                </div>
+                <div class="listlesson" id="listlesson">
+                    <!-- Danh sách lesson và số câu hỏi sẽ được sinh động bởi lesson.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div id="footer"></div>
+</body>
+<script>
+    var counter = 0;
+    var uls = new URL(document.URL)
+    var limittime = uls.searchParams.get("limittime");
+    var giay = limittime * 60;
+
+    // Hiển thị thời gian khởi tạo ngay lập tức (mm:ss, zero-padded)
+    function fmtTime(totalSeconds){
+        var m = Math.floor(totalSeconds/60), s = totalSeconds%60;
+        var mm = (m<10? '0':'') + m;
+        var ss = (s<10? '0':'') + s;
+        return mm + ':' + ss;
+    }
+    document.getElementById("thoigiancl").innerText = fmtTime(giay);
+
+    var looper = setInterval(function () {
+        --giay;
+        document.getElementById("thoigiancl").innerText = fmtTime(giay);
+        if (giay === 0) {
+            clearInterval(looper);
+            try { toastr.warning("Hết giờ"); } catch(e) {}
+            // Không cảnh báo khi auto nộp
+            window.isSubmitting = true;
+            window.removeEventListener('beforeunload', window.beforeUnloadHandler);
+            try { nopBaiThi(); } catch(e) { console.error(e); }
+        }
+
+    }, 1000);
+
+    let mediaRecorder; let recordedChunks = []; let recSeconds = 0; let recTimerInterval; let recordedBlob;
+    const btnStart = document.getElementById('btnStartRec');
+    const btnStop = document.getElementById('btnStopRec');
+    const btnPlay = document.getElementById('btnPlayRec');
+    const btnUpload = document.getElementById('btnUploadRec');
+    const recTimerEl = document.getElementById('recTimer');
+    const recStatusEl = document.getElementById('recStatus');
+    const recAudioEl = document.getElementById('recAudio');
+    const uploadBarWrap = document.getElementById('uploadProgressWrap');
+    const uploadBar = document.getElementById('uploadProgress');
+
+    function formatTime(s){ const m = Math.floor(s/60); const sec = s%60; return (m<10?'0':'')+m+':' + (sec<10?'0':'')+sec; }
+    function updateTimer(){ recTimerEl.textContent = formatTime(recSeconds); }
+
+    async function startRecording(){
+        recordedChunks = []; recSeconds = 0; updateTimer();
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.ondataavailable = e => { if (e.data && e.data.size>0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = onRecordingStop;
+            mediaRecorder.start();
+            recStatusEl.textContent = 'Đang ghi...';
+            btnStart.disabled = true; btnStop.disabled = false; btnPlay.disabled = true; btnUpload.disabled = true;
+            recTimerInterval = setInterval(()=>{ recSeconds++; updateTimer(); if(recSeconds>=600){ stopRecording(); toastr.warning('Đạt tối đa 10 phút'); } },1000);
+        } catch(err){ toastr.error('Không truy cập được micro: '+ err.message); recStatusEl.textContent='Lỗi micro'; }
+    }
+    function stopRecording(){ if(mediaRecorder && mediaRecorder.state !== 'inactive'){ mediaRecorder.stop(); } }
+    function onRecordingStop(){ clearInterval(recTimerInterval); recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+        recStatusEl.textContent = 'Đã ghi ('+ (recordedBlob.size/1024).toFixed(1)+' KB)';
+        btnStart.disabled = false; btnStop.disabled = true; btnPlay.disabled = false; btnUpload.disabled = false; recAudioEl.style.display='block';
+        recAudioEl.src = URL.createObjectURL(recordedBlob);
+    }
+    async function uploadRecording(){
+        if(!recordedBlob){ toastr.warning('Chưa có dữ liệu'); return; }
+        if(recordedBlob.size > 12*1024*1024){ toastr.error('File vượt quá 12MB'); return; }
+        const uls = new URL(document.URL); const examId = uls.searchParams.get('exam'); if(!examId){ toastr.error('Không tìm thấy examId'); return; }
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token'); if(!token){ toastr.error('Thiếu token đăng nhập'); return; }
+        const fd = new FormData();
+        fd.append('examId', examId);
+        fd.append('audio', recordedBlob, 'speaking_'+Date.now()+'.webm');
+        fd.append('duration', recSeconds);
+        uploadBarWrap.style.display='block'; uploadBar.style.width='0%'; recStatusEl.textContent='Đang tải lên...'; btnUpload.disabled=true;
+        try {
+            const res = await fetch('http://localhost:8080/api/speaking/upload-cloud', { method:'POST', headers:{ 'Authorization': 'Bearer '+token }, body: fd });
+            if(!res.ok){ const err = await res.json().catch(()=>({error:'Upload lỗi'})); throw new Error(err.error || res.statusText); }
+            const data = await res.json();
+            recStatusEl.textContent = 'Đã tải lên Cloud'; toastr.success('Tải lên thành công'); console.log('Cloud result', data);
+        } catch(e){ recStatusEl.textContent='Lỗi tải lên'; toastr.error(e.message); btnUpload.disabled=false; }
+        finally { uploadBar.style.width='100%'; setTimeout(()=>{ uploadBarWrap.style.display='none'; }, 1500); }
+    }
+
+    btnStart.addEventListener('click', startRecording);
+    btnStop.addEventListener('click', stopRecording);
+    btnPlay.addEventListener('click', ()=>{ if(recordedBlob){ recAudioEl.play(); }});
+    btnUpload.addEventListener('click', uploadRecording);
+</script>
+</html>

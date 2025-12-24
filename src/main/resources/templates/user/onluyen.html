@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/logo.ico">
+    <title>Ôn luyện</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/main.js"></script>
+    <script src="js/exam.js"></script>
+    <script src="js/onluyen.js"></script>
+    <script>
+        window.onload = function () {
+            loadMenu();
+            initOnLuyen();
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg headermain" id="menu"></nav>
+<div class="contentmain" style="padding-left:10px;padding-right:10px;background:#f8f9fa;padding-bottom:100px;">
+    <!-- Thanh ôn luyện với tiêu đề ở giữa và nút Thoát -->
+    <!-- Adjusted to truly center both title and button together -->
+    <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+        <div id="tieudeonluyen_center" class="fw-bold"></div>
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="exitPractice()">Thoát</button>
+    </div>
+    <div class="row" style="margin-top:10px;">
+        <div class="col-sm-10">
+            <div class="sesctiondethi">
+                <ul class="nav nav-tabs mb-3" id="practice-tabs" role="tablist"></ul>
+                <div class="tab-content" id="practice-content"></div>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="sesctiondethi">
+                <div class="mb-2">
+                    <span>Thời gian:</span>
+                    <div class="practice-timer" id="practiceTimer">00:00</div>
+                </div>
+                <div class="mb-2 d-grid gap-2">
+                    <button onclick="submitPractice()" id="btnSubmitPractice" class="btn btn-primary btn-sm" disabled>Trả lời hết để nộp</button>
+                    <button onclick="viewPracticeResult()" id="btnViewPracticeResult" class="btn btn-success btn-sm" style="display:none;">Xem kết quả</button>
+                </div>
+                <hr>
+                <div class="listlesson" id="listlessonpractice"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="footer"></div>
+<script src="js/main.js"></script>
+<script src="js/onluyen.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+      initOnLuyen();
+  });
+  function exitPractice(){
+      // đơn giản quay lại trang luyện đề (hoặc khoá học), tuỳ luồng bạn muốn
+      window.location.href = 'luyende';
+  }
+</script>
+</body>
+</html>
